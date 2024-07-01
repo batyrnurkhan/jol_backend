@@ -21,7 +21,10 @@ DOWNLOAD_APPS = [
 ]
 
 NEED_APPS = [
-
+    'accounts',
+    'payments',
+    'trips',
+    'buses',
 ]
 
 DJANGO_SETTINGS_APPS = [
