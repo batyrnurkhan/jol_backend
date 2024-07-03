@@ -18,6 +18,7 @@ ALLOWED_HOSTS = []
 
 DOWNLOAD_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 NEED_APPS = [
@@ -125,3 +126,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MOBIZON_API_KEY = 'kz7369a2f04629f399f47e6e85b87fdc4afb06bddc482d1f5cf5de562171c76a368f3e'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
