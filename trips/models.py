@@ -1,4 +1,5 @@
 from django.db import models
+from buses.models import Bus  # Correctly importing the Bus model
 
 class Point(models.Model):
     name = models.CharField(max_length=255)
@@ -14,13 +15,6 @@ class BusStation(models.Model):
     def __str__(self):
         return self.name
 
-class Bus(models.Model):
-    name = models.CharField(max_length=255)
-    # Add additional fields as required for the Bus model
-
-    def __str__(self):
-        return self.name
-
 class Direction(models.Model):
     from_point = models.ForeignKey(Point, related_name='departures', on_delete=models.CASCADE)
     to_point = models.ForeignKey(Point, related_name='arrivals', on_delete=models.CASCADE)
@@ -28,7 +22,8 @@ class Direction(models.Model):
     to_bus_station = models.ForeignKey(BusStation, related_name='arrivals', on_delete=models.CASCADE)
     from_datetime = models.DateTimeField()
     to_datetime = models.DateTimeField()
-    bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
+    bus = models.ForeignKey(Bus, related_name='directions', on_delete=models.CASCADE)  # Adding related_name
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.from_point} to {self.to_point} by {self.bus}"
