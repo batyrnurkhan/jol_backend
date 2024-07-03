@@ -1,4 +1,5 @@
 from django.db import models
+from buses.models import Bus
 
 class Point(models.Model):
     name = models.CharField(max_length=255)
@@ -10,13 +11,6 @@ class Point(models.Model):
 class BusStation(models.Model):
     name = models.CharField(max_length=255)
     point = models.ForeignKey(Point, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-class Bus(models.Model):
-    name = models.CharField(max_length=255)
-    # Add additional fields as required for the Bus model
 
     def __str__(self):
         return self.name

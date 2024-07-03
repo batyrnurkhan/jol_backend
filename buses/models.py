@@ -7,7 +7,6 @@ def generate_bus_id():
 
 class Bus(models.Model):
     id = models.CharField(max_length=6, primary_key=True, default=generate_bus_id, editable=False, unique=True)
-    direction = models.CharField(max_length=255)
     count_of_seats = models.PositiveIntegerField()
     have_toilet = models.BooleanField(default=False)
     have_wifi = models.BooleanField(default=False)
