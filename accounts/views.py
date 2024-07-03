@@ -1,29 +1,30 @@
 # accounts/views.py
-from django.contrib.auth import authenticate
+import logging
 from django.core.cache import cache
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import CustomUser
-from .serializers import *
+from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer
 from .utils import send_sms
 import random
-from rest_framework.authtoken.models import Token
+
+logger = logging.getLogger(__name__)
+
+CustomUser = get_user_model()
+FIXED_VERIFICATION_CODE = "1234"  # This is the fixed verification code
 
 
 class PhoneNumberView(APIView):
     def post(self, request):
+        logger.info("Received data: %s", request.data)
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            code = str(random.randint(1000, 9999))
-            message = f"Your verification code is {code}"
-            response = send_sms(phone_number, message)
-            if response['code'] == 0:  # Check if the message was sent successfully
-                cache.set(phone_number, code, timeout=300)  # Store code in cache for 5 minutes
-                return Response({"message": "Verification code sent"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"message": "Failed to send SMS"}, status=status.HTTP_400_BAD_REQUEST)
+            # Imitate sending SMS by directly using the fixed verification code
+            cache.set(phone_number, FIXED_VERIFICATION_CODE, timeout=300)  # Store code in cache for 5 minutes
+            return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
+        logger.error("Invalid data: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -35,29 +36,21 @@ class VerifyCodeView(APIView):
             code = serializer.validated_data['code']
             stored_code = cache.get(phone_number)
             if stored_code and stored_code == code:
-                return Response({"message": "Phone number verified"}, status=status.HTTP_200_OK)
+                user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
+                return Response({"message": "Phone number verified", "user_id": user.id}, status=status.HTTP_200_OK)
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserRegistrationView(APIView):
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CompleteProfileView(APIView):
+    def post(self, request, user_id):
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
-class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = CompleteProfileSerializer(instance=user, data=request.data, partial=True)
         if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
-            password = serializer.validated_data['password']
-            user = authenticate(request, phone_number=phone_number, password=password)
-            if user:
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key}, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
