@@ -12,6 +12,7 @@ class Bus(models.Model):
     have_toilet = models.BooleanField(default=False)
     have_wifi = models.BooleanField(default=False)
     is_recumbent = models.BooleanField(default=False)
+    floors = models.PositiveIntegerField(choices=[(1, 'One'), (2, 'Two')], default=1)
 
     def __str__(self):
         return f"Bus {self.id} - {self.direction}"
