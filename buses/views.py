@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Bus
+from .serializers import BusSerializer
 
-# Create your views here.
+class BusViewSet(viewsets.ModelViewSet):
+    queryset = Bus.objects.all()
+    serializer_class = BusSerializer
