@@ -23,14 +23,25 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+# accounts/serializers.py
+from rest_framework import serializers
+from .models import CustomUser, Passenger
+
+
+class UserProfileBasicSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['phone_number', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
-        read_only_fields = ['phone_number']
+        fields = ['full_name', 'phone_number']
 
 
 class PassengerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Passenger
         fields = ['id', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['phone_number', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
+        read_only_fields = ['phone_number']

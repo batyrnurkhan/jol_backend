@@ -4,12 +4,13 @@ from django.contrib.auth import authenticate
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.generics import DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Passenger
 from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
-    UserProfileSerializer, PassengerSerializer
+    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 
@@ -76,6 +77,14 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserProfileBasicView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserProfileBasicSerializer(request.user)
+        return Response(serializer.data)
+
+
 class UserProfileView(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
@@ -85,12 +94,13 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
-class PersonalInfoView(APIView):
+class UpdatePersonalInfoView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
 
 
 class PassengerInfoView(APIView):
@@ -109,6 +119,19 @@ class IndividualPassengerView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
+
+
+class DeletePassengerView(DestroyAPIView):
+    queryset = Passenger.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SecurityView(APIView):
