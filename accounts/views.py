@@ -1,12 +1,18 @@
 # accounts/views.py
 import logging
+from django.contrib.auth import authenticate
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer
-from .utils import send_sms
+
+from .models import Passenger
+from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
+    UserProfileSerializer, PassengerSerializer
+from rest_framework import generics, permissions
+from rest_framework.authtoken.models import Token
+
 import random
 
 logger = logging.getLogger(__name__)
@@ -54,3 +60,85 @@ class CompleteProfileView(APIView):
             serializer.save()
             return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            password = serializer.validated_data['password']
+            user = authenticate(request, phone_number=phone_number, password=password)
+            if user:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
+class PersonalInfoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+
+class PassengerInfoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        passengers = Passenger.objects.filter(user=request.user)
+        serializer = PassengerSerializer(passengers, many=True)
+        return Response(serializer.data)
+
+
+class IndividualPassengerView(generics.RetrieveAPIView):
+    queryset = Passenger.objects.all()
+    serializer_class = PassengerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+
+class SecurityView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        security_info = {
+            'data_protection_policy': 'Your data is protected...',
+            'last_security_update': '2024-07-01'
+        }
+        return Response(security_info)
+
+
+class FAQView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        faq_info = [
+            {'question': 'How to change my password?', 'answer': 'Go to settings...'},
+            {'question': 'How to delete my account?', 'answer': 'Contact support...'}
+        ]
+        return Response(faq_info)
+
+
+class SupportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        support_info = {
+            'support_email': 'support@example.com',
+            'support_phone': '+1234567890'
+        }
+        return Response(support_info)

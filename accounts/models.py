@@ -42,3 +42,14 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.phone_number
+
+
+class Passenger(models.Model):
+    user = models.ForeignKey(CustomUser, related_name='passengers', on_delete=models.CASCADE)
+    full_name = models.CharField(_('ФИО пассажира'), max_length=255)
+    document_type = models.CharField(_('тип документа'), max_length=50)
+    document_number_or_iin = models.CharField(_('номер документа или ИИН'), max_length=100)
+    birth_date = models.DateField(_('дата рождения'))
+
+    def __str__(self):
+        return self.full_name

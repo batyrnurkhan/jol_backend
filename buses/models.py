@@ -2,8 +2,10 @@ import random
 import string
 from django.db import models
 
+
 def generate_bus_id():
     return ''.join(random.choices(string.digits, k=6))
+
 
 class Bus(models.Model):
     id = models.CharField(max_length=6, primary_key=True, default=generate_bus_id, editable=False, unique=True)
