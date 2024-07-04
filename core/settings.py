@@ -19,6 +19,7 @@ ALLOWED_HOSTS = []
 DOWNLOAD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
 ]
 
 NEED_APPS = [
