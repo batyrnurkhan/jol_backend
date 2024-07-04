@@ -16,4 +16,4 @@ class Bus(models.Model):
     floors = models.PositiveIntegerField(choices=[(1, 'One'), (2, 'Two')], default=1)
 
     def __str__(self):
-        return f"Bus {self.id} - {self.direction}"
+        return f"Bus {self.id}"
