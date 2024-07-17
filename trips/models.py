@@ -23,17 +23,19 @@ class BusStation(models.Model):
 class Direction(models.Model):
     from_point = models.ForeignKey(Point, related_name='departures', on_delete=models.CASCADE)
     to_point = models.ForeignKey(Point, related_name='arrivals', on_delete=models.CASCADE)
-    from_bus_station = models.ForeignKey(BusStation, related_name='departures', on_delete=models.CASCADE)
-    to_bus_station = models.ForeignKey(BusStation, related_name='arrivals', on_delete=models.CASCADE)
+    from_bus_station = models.ForeignKey(BusStation, related_name='departures', on_delete=models.SET_NULL, null=True, blank=True)
+    to_bus_station = models.ForeignKey(BusStation, related_name='arrivals', on_delete=models.SET_NULL, null=True, blank=True)
     from_datetime = models.DateTimeField()
     to_datetime = models.DateTimeField()
     bus = models.ForeignKey(Bus, related_name='directions', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def is_free(self):
+    def free_places_count(self):
         tickets = self.tickets.filter(Q(status="Payed") | Q(status="Booked"))
-        count = self.bus.count_of_seats - tickets.count()
-        return count > 0
+        return self.bus.count_of_seats - tickets.count()
+
+    def travel_time(self):
+        return self.to_datetime - self.from_datetime
 
     def __str__(self):
         return f"{self.from_point} to {self.to_point} by {self.bus}"

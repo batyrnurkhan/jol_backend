@@ -1,10 +1,21 @@
 from rest_framework import serializers
 from .models import Point, BusStation, Direction
 
+class PointNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Point
+        fields = ['id', 'name']
+
 class PointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Point
         fields = ['id', 'name', 'region']
+
+class BusStationNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BusStation
+        fields = ['id', 'name']
 
 class BusStationSerializer(serializers.ModelSerializer):
     point = PointSerializer()  # Nested serializer to display point details

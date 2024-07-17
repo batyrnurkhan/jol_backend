@@ -45,7 +45,7 @@ class CustomUser(AbstractUser):
 
 
 class Passenger(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='passengers', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, related_name='passengers', on_delete=models.CASCADE, null=True, blank=True)
     full_name = models.CharField(_('ФИО пассажира'), max_length=255)
     document_type = models.CharField(_('тип документа'), max_length=50)
     document_number_or_iin = models.CharField(_('номер документа или ИИН'), max_length=100)

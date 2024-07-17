@@ -165,3 +165,12 @@ class SupportView(APIView):
             'support_phone': '+1234567890'
         }
         return Response(support_info)
+
+
+class CreatePassenger(APIView):
+    def post(self, request):
+        serializer = PassengerSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response("OK", status=status.HTTP_201_CREATED)
