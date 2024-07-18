@@ -172,5 +172,5 @@ class CreatePassenger(APIView):
         serializer = PassengerSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response("OK", status=status.HTTP_201_CREATED)
+        passenger = serializer.save()
+        return Response(passenger.id, status=status.HTTP_201_CREATED)

@@ -4,11 +4,12 @@ import json
 from django.db.models import Min, F, Q
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from books.models import Ticket, TicketPassenger
-from books.serializers import TicketDirectionSerializer
+from books.serializers import TicketDirectionSerializer, TicketSerializer
 from buses.models import Bus
 from trips.models import Direction
 
@@ -90,5 +91,13 @@ class DirectionPlaces(APIView):
 
 class CreateTicket(APIView):
     def post(self, request):
-
-        return Response("OK", status=status.HTTP_200_OK)
+        serializer = TicketSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            try:
+                serializer.create(serializer.validated_data)
+            except Exception as e:
+                print(e)
+                return Response(e.__str__(), status=status.HTTP_400_BAD_REQUEST)
+            return Response("OK", status=status.HTTP_200_OK)
+        print(serializer.errors)
+        return Response("NOT OK", status=status.HTTP_400_BAD_REQUEST)

@@ -24,9 +24,20 @@ class TicketPassenger(models.Model):
     place_num = models.IntegerField()
     place_floor = models.IntegerField()
 
+    def save(self, *args, **kwargs):
+        tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction)
+        for tp in tps:
+            if tp.passenger == self.passenger:
+                raise ValidationError(f"This passenger {self.passenger.full_name} is already have place {tp.place_num} on {tp.place_floor} floor")
+            if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
+                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name}")
+        super().save(*args, **kwargs)
+
     def clean(self):
         tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction)
         for tp in tps:
+            if tp.passenger == self.passenger:
+                raise ValidationError(f"This passenger {self.passenger.full_name} is already have place {tp.place_num}, {tp.place_floor} floor")
             if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                raise ValidationError(f"This place is already taken")
+                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name}")
 

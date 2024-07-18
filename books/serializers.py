@@ -1,8 +1,11 @@
 import datetime
 
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from books.models import Ticket
+from accounts.models import Passenger
+from books.models import Ticket, TicketPassenger
 from buses.models import Bus
 from trips.models import Direction
 from trips.serializers import BusStationNameSerializer, PointNameSerializer
@@ -48,12 +51,49 @@ class TicketDirectionSerializer(serializers.ModelSerializer):
         return obj.to_datetime.time().strftime('%H:%M')
 
 
+class PassengerTicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TicketPassenger
+        fields = ["passenger", "place_num", "place_floor"]
+
+
 class TicketSerializer(serializers.Serializer):
     direction = serializers.IntegerField()
-    user = serializers.IntegerField(required=False)
-    passenger_ids = serializers.ListSerializer(allow_empty=False)
-    phone_number = serializers.CharField(required=False)
-    email = serializers.CharField(required=False)
+    passengers = PassengerTicketSerializer(many=True)
+
+    def create(self, validated_data):
+        try:
+            with transaction.atomic():
+                direction = Direction.objects.get(id=validated_data["direction"])
+                passengers_data = validated_data["passengers"]
+
+                ticket = Ticket()
+                ticket.direction = direction
+                ticket.user = self.context["request"].user if self.context["request"].user.is_authenticated else None
+                ticket.status = "Booked"
+                ticket.save()
+
+                for pass_data in passengers_data:
+                    passenger = pass_data["passenger"]
+                    if not passenger:
+                        raise ValidationError("No existing passenger")
+                    passenger_ticket = TicketPassenger()
+                    passenger_ticket.ticket = ticket
+                    passenger_ticket.passenger = passenger
+                    passenger_ticket.place_num = pass_data["place_num"]
+                    passenger_ticket.place_floor = pass_data["place_floor"]
+                    passenger_ticket.save()
+                    print("created")
+        except Direction.DoesNotExist:
+            raise ValidationError("Direction does not exist")
+        except Passenger.DoesNotExist:
+            raise ValidationError("Passenger does not exist")
+        except ValidationError as e:
+            # Optionally, you can add custom logging or handling here
+            raise e
+        except Exception as e:
+            # Catch any other exceptions
+            raise ValidationError(str(e))
 
     class Meta:
-        fields = ["direction", "user", "passenger_ids", "phone_number", "email"]
+        fields = ["direction", "passengers"]
