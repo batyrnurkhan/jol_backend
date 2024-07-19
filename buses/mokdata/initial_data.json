@@ -1,0 +1,57 @@
+[
+  {
+    "model": "buses.bus",
+    "pk": "123456",
+    "fields": {
+      "count_of_seats": 50,
+      "have_toilet": true,
+      "have_wifi": false,
+      "is_recumbent": true,
+      "floors": 1
+    }
+  },
+  {
+    "model": "buses.bus",
+    "pk": "234567",
+    "fields": {
+      "count_of_seats": 30,
+      "have_toilet": false,
+      "have_wifi": true,
+      "is_recumbent": false,
+      "floors": 2
+    }
+  },
+  {
+    "model": "buses.bus",
+    "pk": "345678",
+    "fields": {
+      "count_of_seats": 40,
+      "have_toilet": true,
+      "have_wifi": true,
+      "is_recumbent": false,
+      "floors": 1
+    }
+  },
+  {
+    "model": "buses.bus",
+    "pk": "456789",
+    "fields": {
+      "count_of_seats": 60,
+      "have_toilet": true,
+      "have_wifi": true,
+      "is_recumbent": true,
+      "floors": 2
+    }
+  },
+  {
+    "model": "buses.bus",
+    "pk": "567890",
+    "fields": {
+      "count_of_seats": 45,
+      "have_toilet": false,
+      "have_wifi": false,
+      "is_recumbent": true,
+      "floors": 1
+    }
+  }
+]

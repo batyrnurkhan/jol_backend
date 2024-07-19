@@ -1,0 +1,60 @@
+[
+  {
+    "model": "books.ticket",
+    "pk": 1,
+    "fields": {
+      "direction": 1,
+      "status": "Booked",
+      "user": 1
+    }
+  },
+  {
+    "model": "books.ticket",
+    "pk": 2,
+    "fields": {
+      "direction": 1,
+      "status": "Booked",
+      "user": 2
+    }
+  },
+  {
+    "model": "books.ticketpassenger",
+    "pk": 1,
+    "fields": {
+      "ticket": 1,
+      "passenger": 1,
+      "place_num": 1,
+      "place_floor": 1
+    }
+  },
+  {
+    "model": "books.ticketpassenger",
+    "pk": 2,
+    "fields": {
+      "ticket": 2,
+      "passenger": 2,
+      "place_num": 2,
+      "place_floor": 1
+    }
+  },
+  {
+    "model": "books.ticketpassenger",
+    "pk": 3,
+    "fields": {
+      "ticket": 1,
+      "passenger": 3,
+      "place_num": 3,
+      "place_floor": 1
+    }
+  },
+  {
+    "model": "books.ticketpassenger",
+    "pk": 4,
+    "fields": {
+      "ticket": 2,
+      "passenger": 4,
+      "place_num": 4,
+      "place_floor": 1
+    }
+  }
+]

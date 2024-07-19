@@ -1,0 +1,92 @@
+[
+  {
+    "model": "trips.point",
+    "pk": 1,
+    "fields": {
+      "name": "City A",
+      "region": "Region 1"
+    }
+  },
+  {
+    "model": "trips.point",
+    "pk": 2,
+    "fields": {
+      "name": "City B",
+      "region": "Region 2"
+    }
+  },
+  {
+    "model": "trips.point",
+    "pk": 3,
+    "fields": {
+      "name": "City C",
+      "region": "Region 3"
+    }
+  },
+  {
+    "model": "trips.busstation",
+    "pk": 1,
+    "fields": {
+      "name": "Station 1",
+      "point": 1
+    }
+  },
+  {
+    "model": "trips.busstation",
+    "pk": 2,
+    "fields": {
+      "name": "Station 2",
+      "point": 2
+    }
+  },
+  {
+    "model": "trips.busstation",
+    "pk": 3,
+    "fields": {
+      "name": "Station 3",
+      "point": 3
+    }
+  },
+  {
+    "model": "trips.direction",
+    "pk": 1,
+    "fields": {
+      "from_point": 1,
+      "to_point": 2,
+      "from_bus_station": 1,
+      "to_bus_station": 2,
+      "from_datetime": "2024-08-01T09:00:00Z",
+      "to_datetime": "2024-08-01T12:00:00Z",
+      "bus": "123456",
+      "price": 1000.0
+    }
+  },
+  {
+    "model": "trips.direction",
+    "pk": 2,
+    "fields": {
+      "from_point": 2,
+      "to_point": 3,
+      "from_bus_station": 2,
+      "to_bus_station": 3,
+      "from_datetime": "2024-08-02T10:00:00Z",
+      "to_datetime": "2024-08-02T13:00:00Z",
+      "bus": "234567",
+      "price": 1500.0
+    }
+  },
+  {
+    "model": "trips.direction",
+    "pk": 3,
+    "fields": {
+      "from_point": 3,
+      "to_point": 1,
+      "from_bus_station": 3,
+      "to_bus_station": 1,
+      "from_datetime": "2024-08-03T11:00:00Z",
+      "to_datetime": "2024-08-03T14:00:00Z",
+      "bus": "345678",
+      "price": 2000.0
+    }
+  }
+]

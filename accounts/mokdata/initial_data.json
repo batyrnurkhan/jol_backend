@@ -1,0 +1,72 @@
+[
+  {
+    "model": "accounts.customuser",
+    "pk": 1,
+    "fields": {
+      "full_name": "John Doe",
+      "document_type": "Passport",
+      "document_number_or_iin": "A12345678",
+      "birth_date": "1985-05-15",
+      "email": "johndoe@example.com",
+      "phone_number": "1234567890",
+      "password": "pbkdf2_sha256$260000$abcd$xyz"
+    }
+  },
+  {
+    "model": "accounts.customuser",
+    "pk": 2,
+    "fields": {
+      "full_name": "Jane Smith",
+      "document_type": "ID Card",
+      "document_number_or_iin": "B98765432",
+      "birth_date": "1990-07-25",
+      "email": "janesmith@example.com",
+      "phone_number": "0987654321",
+      "password": "pbkdf2_sha256$260000$abcd$xyz"
+    }
+  },
+  {
+    "model": "accounts.passenger",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "full_name": "Alice Johnson",
+      "document_type": "Passport",
+      "document_number_or_iin": "P987654321",
+      "birth_date": "2010-03-10"
+    }
+  },
+  {
+    "model": "accounts.passenger",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "full_name": "Bob Williams",
+      "document_type": "ID Card",
+      "document_number_or_iin": "I123456789",
+      "birth_date": "2005-11-05"
+    }
+  },
+  {
+    "model": "accounts.passenger",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "full_name": "Charlie Brown",
+      "document_type": "Passport",
+      "document_number_or_iin": "P123456789",
+      "birth_date": "2008-01-20"
+    }
+  },
+  {
+    "model": "accounts.passenger",
+    "pk": 4,
+    "fields": {
+      "user": 2,
+      "full_name": "Daisy Miller",
+      "document_type": "ID Card",
+      "document_number_or_iin": "I987654321",
+      "birth_date": "2003-07-15"
+    }
+  }
+]
