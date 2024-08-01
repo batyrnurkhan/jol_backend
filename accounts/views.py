@@ -44,7 +44,13 @@ class VerifyCodeView(APIView):
             stored_code = cache.get(phone_number)
             if stored_code and stored_code == code:
                 user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
-                return Response({"message": "Phone number verified", "user_id": user.id}, status=status.HTTP_200_OK)
+                if created or not user.has_usable_password():
+                    # Set the user's password to the fixed verification code "1234"
+                    user.set_password(FIXED_VERIFICATION_CODE)
+                    user.save()
+                # Generate a token for the user
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key}, status=status.HTTP_200_OK)
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
