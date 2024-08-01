@@ -17,4 +17,7 @@ urlpatterns = [
     path('profile/security/', SecurityView.as_view(), name='security'),
     path('profile/faq/', FAQView.as_view(), name='faq'),
     path('profile/support/', SupportView.as_view(), name='support'),
+
+    path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
+
 ]

@@ -68,6 +68,17 @@ class CompleteProfileView(APIView):
             return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserProfileByTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserProfileSerializer(user)
+        return Response({
+            "id": user.id,
+            "profile": serializer.data
+        })
+
 
 class LoginView(APIView):
     def post(self, request):
