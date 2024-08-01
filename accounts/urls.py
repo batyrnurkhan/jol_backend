@@ -4,7 +4,9 @@ from .views import *
 
 urlpatterns = [
     path('send-code/', PhoneNumberView.as_view(), name='send_code'),
+
     path('create-passenger/', CreatePassenger.as_view(), name='create_passenger'),
+
     path('verify-code/', VerifyCodeView.as_view(), name='verify_code'),
     path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
     path('login/', LoginView.as_view(), name='login'),
