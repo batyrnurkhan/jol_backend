@@ -97,3 +97,9 @@ class TicketSerializer(serializers.Serializer):
 
     class Meta:
         fields = ["direction", "passengers"]
+
+
+class DirectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Direction
+        fields = '__all__'

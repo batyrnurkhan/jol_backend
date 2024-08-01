@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from books.models import Ticket, TicketPassenger
-from books.serializers import TicketDirectionSerializer, TicketSerializer
+from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer
 from buses.models import Bus
 from trips.models import Direction
 
@@ -101,3 +101,10 @@ class CreateTicket(APIView):
             return Response("OK", status=status.HTTP_200_OK)
         print(serializer.errors)
         return Response("NOT OK", status=status.HTTP_400_BAD_REQUEST)
+
+
+class DirectionListView(APIView):
+    def get(self, request):
+        directions = Direction.objects.all()
+        serializer = DirectionSerializer(directions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
