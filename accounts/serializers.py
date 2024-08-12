@@ -45,3 +45,36 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['phone_number', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
         read_only_fields = ['phone_number']
+
+from rest_framework import serializers
+from books.models import Ticket, TicketPassenger
+
+class MyTicketPassengerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TicketPassenger
+        fields = ['place_num', 'place_floor']
+
+class MyTicketSerializer(serializers.ModelSerializer):
+    direction_name = serializers.CharField(source='direction.name')
+    from_date = serializers.SerializerMethodField()
+    to_date = serializers.SerializerMethodField()
+    from_time = serializers.SerializerMethodField()
+    to_time = serializers.SerializerMethodField()
+    price = serializers.IntegerField(source='direction.price')
+    passengers = MyTicketPassengerSerializer(source='passenger_tickets', many=True)
+
+    class Meta:
+        model = Ticket
+        fields = ['direction_name', 'from_date', 'to_date', 'from_time', 'to_time', 'price', 'passengers']
+
+    def get_from_date(self, obj):
+        return obj.direction.from_datetime.date().strftime('%d %b')
+
+    def get_to_date(self, obj):
+        return obj.direction.to_datetime.date().strftime('%d %b')
+
+    def get_from_time(self, obj):
+        return obj.direction.from_datetime.time().strftime('%H:%M')
+
+    def get_to_time(self, obj):
+        return obj.direction.to_datetime.time().strftime('%H:%M')

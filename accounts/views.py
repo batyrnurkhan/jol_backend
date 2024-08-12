@@ -5,12 +5,14 @@ from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.generics import DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from books.models import Ticket
 from .models import Passenger
 from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
-    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer
+    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 
@@ -191,3 +193,12 @@ class CreatePassenger(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         passenger = serializer.save()
         return Response(passenger.id, status=status.HTTP_201_CREATED)
+
+
+class MyTicketsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        tickets = Ticket.objects.filter(user=request.user)
+        serializer = MyTicketSerializer(tickets, many=True)
+        return Response(serializer.data, status=200)

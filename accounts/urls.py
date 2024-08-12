@@ -20,6 +20,7 @@ urlpatterns = [
     path('profile/faq/', FAQView.as_view(), name='faq'),
     path('profile/support/', SupportView.as_view(), name='support'),
 
+    path('my-tickets/', MyTicketsView.as_view(), name='my-tickets'),
     path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
 
 ]
