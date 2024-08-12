@@ -103,3 +103,20 @@ class DirectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Direction
         fields = '__all__'
+
+class TicketDetailSerializer(serializers.ModelSerializer):
+    qr_code = serializers.SerializerMethodField()
+    direction = DirectionSerializer()
+    passengers = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ticket
+        fields = ['id', 'qr_code', 'direction', 'passengers']
+
+    def get_qr_code(self, obj):
+        # Assuming you have a method to generate QR codes
+        return f"http://example.com/qr/{obj.id}"
+
+    def get_passengers(self, obj):
+        passengers = TicketPassenger.objects.filter(ticket=obj)
+        return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]

@@ -8,4 +8,6 @@ urlpatterns = [
     path('direction-places/', DirectionPlaces.as_view(), name='direction_places'),
     path('create-ticket/', CreateTicket.as_view(), name='create_ticket'),
     path('directions/', DirectionListView.as_view(), name='direction_list'),
+    path('retrieve-paid-ticket/', RetrievePaidTicket.as_view(), name='retrieve_paid_ticket'),
+
 ]

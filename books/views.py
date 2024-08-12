@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from books.models import Ticket, TicketPassenger
-from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer
+from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer, TicketDetailSerializer
 from buses.models import Bus
 from trips.models import Direction
 
@@ -108,3 +108,17 @@ class DirectionListView(APIView):
         directions = Direction.objects.all()
         serializer = DirectionSerializer(directions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrievePaidTicket(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            ticket = Ticket.objects.filter(user=user, status="Payed").first()
+            if not ticket:
+                return Response({"detail": "No paid ticket found."}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = TicketDetailSerializer(ticket)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
