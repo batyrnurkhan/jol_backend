@@ -31,8 +31,8 @@ class Bus(models.Model):
     name = models.CharField(max_length=255)
     stamp = models.ForeignKey('Stamp', on_delete=models.SET_NULL, null=True, related_name='buses')  # Assuming Stamp is another model
     model = models.ForeignKey('Model', on_delete=models.SET_NULL, null=True, related_name='buses')  # Assuming Model is another model
-    state_number = models.CharField(max_length=10, unique=True)  # Format XXX AAA XX
-    VIN = models.CharField(max_length=17, unique=True)
+    state_number = models.CharField(max_length=10)  # Format XXX AAA XX
+    VIN = models.CharField(max_length=17)
     count_of_seats = models.PositiveIntegerField()
     have_toilet = models.BooleanField(default=False)
     have_wifi = models.BooleanField(default=False)
