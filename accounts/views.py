@@ -43,18 +43,20 @@ class VerifyCodeView(APIView):
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
             code = serializer.validated_data['code']
+            password = serializer.validated_data['password1']
             stored_code = cache.get(phone_number)
             if stored_code and stored_code == code:
                 user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
                 if created or not user.has_usable_password():
-                    # Set the user's password to the fixed verification code "1234"
-                    user.set_password(FIXED_VERIFICATION_CODE)
+                    # Устанавливаем пароль пользователя
+                    user.set_password(password)
                     user.save()
-                # Generate a token for the user
+                # Генерируем токен для пользователя
                 token, _ = Token.objects.get_or_create(user=user)
                 return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key}, status=status.HTTP_200_OK)
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class CompleteProfileView(APIView):
