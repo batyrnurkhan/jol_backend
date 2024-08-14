@@ -94,13 +94,14 @@ class CreateTicket(APIView):
         serializer = TicketSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             try:
-                serializer.create(serializer.validated_data)
+                reserved_places = serializer.create(serializer.validated_data)
+            except ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                print(e)
-                return Response(e.__str__(), status=status.HTTP_400_BAD_REQUEST)
-            return Response("OK", status=status.HTTP_200_OK)
-        print(serializer.errors)
-        return Response("NOT OK", status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "OK", "reserved_places": reserved_places}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class DirectionListView(APIView):

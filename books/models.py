@@ -20,24 +20,31 @@ class Ticket(models.Model):
 
 class TicketPassenger(models.Model):
     ticket = models.ForeignKey(Ticket, related_name="passenger_tickets", on_delete=models.CASCADE)
-    passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE)
+    passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)  # Поле для хранения пользователя, если билет куплен для него
     place_num = models.IntegerField()
     place_floor = models.IntegerField()
 
     def save(self, *args, **kwargs):
         tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction)
         for tp in tps:
-            if tp.passenger == self.passenger:
-                raise ValidationError(f"This passenger {self.passenger.full_name} is already have place {tp.place_num} on {tp.place_floor} floor")
+            if self.passenger and tp.passenger == self.passenger:
+                raise ValidationError(f"This passenger {self.passenger.full_name} already has place {tp.place_num} on {tp.place_floor} floor")
+            if self.user and tp.user == self.user:
+                raise ValidationError(f"This user already has place {tp.place_num} on {tp.place_floor} floor")
             if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name}")
+                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
         super().save(*args, **kwargs)
 
     def clean(self):
         tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction)
         for tp in tps:
-            if tp.passenger == self.passenger:
-                raise ValidationError(f"This passenger {self.passenger.full_name} is already have place {tp.place_num}, {tp.place_floor} floor")
+            if self.passenger and tp.passenger == self.passenger:
+                raise ValidationError(f"This passenger {self.passenger.full_name} already has place {tp.place_num}, {tp.place_floor} floor")
+            if self.user and tp.user == self.user:
+                raise ValidationError(f"This user already has place {tp.place_num}, {tp.place_floor} floor")
             if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name}")
+                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
 
+    class Meta:
+        unique_together = ['ticket', 'place_num', 'place_floor']
