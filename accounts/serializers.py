@@ -11,6 +11,14 @@ class VerificationCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     code = serializers.CharField(max_length=4)
 
+class SetPasswordSerializer(serializers.Serializer):
+    password1 = serializers.CharField(write_only=True, min_length=8)
+    password2 = serializers.CharField(write_only=True, min_length=8)
+
+    def validate(self, data):
+        if data['password1'] != data['password2']:
+            raise serializers.ValidationError("Passwords do not match")
+        return data
 
 class CompleteProfileSerializer(serializers.ModelSerializer):
     class Meta:

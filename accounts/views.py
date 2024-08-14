@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from books.models import Ticket
 from .models import Passenger
 from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
-    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer
+    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 
@@ -54,6 +54,18 @@ class VerifyCodeView(APIView):
                 token, _ = Token.objects.get_or_create(user=user)
                 return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key}, status=status.HTTP_200_OK)
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SetPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['password1'])
+            user.save()
+            return Response({"message": "Password set successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

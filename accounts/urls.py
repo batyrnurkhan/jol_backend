@@ -10,6 +10,8 @@ urlpatterns = [
     path('verify-code/', VerifyCodeView.as_view(), name='verify_code'),
     path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
 
+    path('set-password/', SetPasswordView.as_view(), name='set_password'),
+
     path('login/', LoginView.as_view(), name='login'),
     path('profile/', UserProfileBasicView.as_view(), name='profile'),
     path('profile/personal-info/', UserProfileView.as_view(), name='personal_info'),
