@@ -26,4 +26,6 @@ urlpatterns = [
     path('my-tickets/', MyTicketsView.as_view(), name='my-tickets'),
     path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
 
+    path('delete-user/', LogoutView.as_view(), name='logout'),
+
 ]

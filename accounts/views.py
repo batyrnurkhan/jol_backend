@@ -21,7 +21,7 @@ import random
 logger = logging.getLogger(__name__)
 
 CustomUser = get_user_model()
-FIXED_VERIFICATION_CODE = "1234"  # This is the fixed verification code
+FIXED_VERIFICATION_CODE = "0000"  # This is the fixed verification code
 
 
 class PhoneNumberView(APIView):
@@ -216,3 +216,17 @@ class MyTicketsView(APIView):
         tickets = Ticket.objects.filter(user=request.user)
         serializer = MyTicketSerializer(tickets, many=True)
         return Response(serializer.data, status=200)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Get the token associated with the request user
+            token = Token.objects.get(user=request.user)
+            # Delete the token, effectively logging out the user
+            token.delete()
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"error": "Token not found."}, status=status.HTTP_400_BAD_REQUEST)
