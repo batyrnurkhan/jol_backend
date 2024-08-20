@@ -71,10 +71,11 @@ class MyTicketSerializer(serializers.ModelSerializer):
     to_time = serializers.SerializerMethodField()
     price = serializers.IntegerField(source='direction.price')
     passengers = MyTicketPassengerSerializer(source='passenger_tickets', many=True)
+    status = serializers.CharField()  # Add the status field directly
 
     class Meta:
         model = Ticket
-        fields = ['direction_name', 'from_date', 'to_date', 'from_time', 'to_time', 'price', 'passengers']
+        fields = ['direction_name', 'from_date', 'to_date', 'from_time', 'to_time', 'price', 'passengers', 'status']
 
     def get_direction_name(self, obj):
         return f"{obj.direction.from_point.name} to {obj.direction.to_point.name}"
@@ -90,4 +91,5 @@ class MyTicketSerializer(serializers.ModelSerializer):
 
     def get_to_time(self, obj):
         return obj.direction.to_datetime.time().strftime('%H:%M')
+
 
