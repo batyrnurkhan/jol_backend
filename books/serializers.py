@@ -115,7 +115,7 @@ class TicketSerializer(serializers.Serializer):
                 else:
                     raise ValidationError("Either place_num and place_floor or tickets must be provided.")
 
-                return reserved_places
+                return ticket, reserved_places  # Return both the ticket and reserved places
 
         except Direction.DoesNotExist:
             raise ValidationError("Direction does not exist")

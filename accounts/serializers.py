@@ -10,13 +10,7 @@ class PhoneNumberSerializer(serializers.Serializer):
 class VerificationCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     code = serializers.CharField(max_length=4)
-    password1 = serializers.CharField(write_only=True, min_length=8)
-    password2 = serializers.CharField(write_only=True, min_length=8)
 
-    def validate(self, data):
-        if data['password1'] != data['password2']:
-            raise serializers.ValidationError("Passwords do not match")
-        return data
 
 class SetPasswordSerializer(serializers.Serializer):
     password1 = serializers.CharField(write_only=True, min_length=8)
@@ -70,7 +64,7 @@ class MyTicketPassengerSerializer(serializers.ModelSerializer):
         fields = ['place_num', 'place_floor']
 
 class MyTicketSerializer(serializers.ModelSerializer):
-    direction_name = serializers.CharField(source='direction.name')
+    direction_name = serializers.SerializerMethodField()
     from_date = serializers.SerializerMethodField()
     to_date = serializers.SerializerMethodField()
     from_time = serializers.SerializerMethodField()
@@ -81,6 +75,9 @@ class MyTicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ['direction_name', 'from_date', 'to_date', 'from_time', 'to_time', 'price', 'passengers']
+
+    def get_direction_name(self, obj):
+        return f"{obj.direction.from_point.name} to {obj.direction.to_point.name}"
 
     def get_from_date(self, obj):
         return obj.direction.from_datetime.date().strftime('%d %b')
@@ -93,3 +90,4 @@ class MyTicketSerializer(serializers.ModelSerializer):
 
     def get_to_time(self, obj):
         return obj.direction.to_datetime.time().strftime('%H:%M')
+
