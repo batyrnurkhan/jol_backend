@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from books.models import Ticket
 from .models import Passenger
 from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
-    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer
+    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 
@@ -21,7 +21,7 @@ import random
 logger = logging.getLogger(__name__)
 
 CustomUser = get_user_model()
-FIXED_VERIFICATION_CODE = "1234"  # This is the fixed verification code
+FIXED_VERIFICATION_CODE = "0000"  # This is the fixed verification code
 
 
 class PhoneNumberView(APIView):
@@ -44,17 +44,31 @@ class VerifyCodeView(APIView):
             phone_number = serializer.validated_data['phone_number']
             code = serializer.validated_data['code']
             stored_code = cache.get(phone_number)
+
             if stored_code and stored_code == code:
                 user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
-                if created or not user.has_usable_password():
-                    # Set the user's password to the fixed verification code "1234"
-                    user.set_password(FIXED_VERIFICATION_CODE)
-                    user.save()
+
                 # Generate a token for the user
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key}, status=status.HTTP_200_OK)
+                return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key},
+                                status=status.HTTP_200_OK)
+
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SetPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['password1'])
+            user.save()
+            return Response({"message": "Password set successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class CompleteProfileView(APIView):
@@ -202,3 +216,17 @@ class MyTicketsView(APIView):
         tickets = Ticket.objects.filter(user=request.user)
         serializer = MyTicketSerializer(tickets, many=True)
         return Response(serializer.data, status=200)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Get the token associated with the request user
+            token = Token.objects.get(user=request.user)
+            # Delete the token, effectively logging out the user
+            token.delete()
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"error": "Token not found."}, status=status.HTTP_400_BAD_REQUEST)

@@ -9,6 +9,9 @@ urlpatterns = [
 
     path('verify-code/', VerifyCodeView.as_view(), name='verify_code'),
     path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
+
+    path('set-password/', SetPasswordView.as_view(), name='set_password'),
+
     path('login/', LoginView.as_view(), name='login'),
     path('profile/', UserProfileBasicView.as_view(), name='profile'),
     path('profile/personal-info/', UserProfileView.as_view(), name='personal_info'),
@@ -22,5 +25,7 @@ urlpatterns = [
 
     path('my-tickets/', MyTicketsView.as_view(), name='my-tickets'),
     path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
+
+    path('delete-user/', LogoutView.as_view(), name='logout'),
 
 ]

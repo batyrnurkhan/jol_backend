@@ -59,13 +59,17 @@ class PassengerTicketSerializer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.Serializer):
     direction = serializers.IntegerField()
-    passengers = PassengerTicketSerializer(many=True)
+    place_num = serializers.IntegerField(required=False)
+    place_floor = serializers.IntegerField(required=False)
+    tickets = PassengerTicketSerializer(many=True, required=False)
 
     def create(self, validated_data):
         try:
             with transaction.atomic():
                 direction = Direction.objects.get(id=validated_data["direction"])
-                passengers_data = validated_data["passengers"]
+                place_num = validated_data.get("place_num")
+                place_floor = validated_data.get("place_floor")
+                tickets_data = validated_data.get("tickets", [])
 
                 ticket = Ticket()
                 ticket.direction = direction
@@ -73,33 +77,75 @@ class TicketSerializer(serializers.Serializer):
                 ticket.status = "Booked"
                 ticket.save()
 
-                for pass_data in passengers_data:
-                    passenger = pass_data["passenger"]
-                    if not passenger:
-                        raise ValidationError("No existing passenger")
-                    passenger_ticket = TicketPassenger()
-                    passenger_ticket.ticket = ticket
-                    passenger_ticket.passenger = passenger
-                    passenger_ticket.place_num = pass_data["place_num"]
-                    passenger_ticket.place_floor = pass_data["place_floor"]
-                    passenger_ticket.save()
-                    print("created")
+                reserved_places = []
+
+                if place_num and place_floor:
+                    if TicketPassenger.objects.filter(ticket__direction=direction, place_num=place_num, place_floor=place_floor).exists():
+                        raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
+
+                    TicketPassenger.objects.create(
+                        ticket=ticket,
+                        user=self.context["request"].user,  # Сохраняем пользователя, если билет для него
+                        place_num=place_num,
+                        place_floor=place_floor
+                    )
+                    reserved_places.append({
+                        "place_num": place_num,
+                        "place_floor": place_floor
+                    })
+                elif tickets_data:
+                    for ticket_data in tickets_data:
+                        passenger = ticket_data.get("passenger")
+                        place_num = ticket_data["place_num"]
+                        place_floor = ticket_data["place_floor"]
+
+                        if TicketPassenger.objects.filter(ticket__direction=direction, place_num=place_num, place_floor=place_floor).exists():
+                            raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
+
+                        TicketPassenger.objects.create(
+                            ticket=ticket,
+                            passenger=passenger,
+                            place_num=place_num,
+                            place_floor=place_floor
+                        )
+                        reserved_places.append({
+                            "place_num": place_num,
+                            "place_floor": place_floor
+                        })
+                else:
+                    raise ValidationError("Either place_num and place_floor or tickets must be provided.")
+
+                return ticket, reserved_places  # Return both the ticket and reserved places
+
         except Direction.DoesNotExist:
             raise ValidationError("Direction does not exist")
-        except Passenger.DoesNotExist:
-            raise ValidationError("Passenger does not exist")
         except ValidationError as e:
-            # Optionally, you can add custom logging or handling here
             raise e
         except Exception as e:
-            # Catch any other exceptions
             raise ValidationError(str(e))
 
     class Meta:
-        fields = ["direction", "passengers"]
+        fields = ["direction", "place_num", "place_floor", "tickets"]
 
 
 class DirectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Direction
         fields = '__all__'
+
+class TicketDetailSerializer(serializers.ModelSerializer):
+    qr_code = serializers.SerializerMethodField()
+    direction = DirectionSerializer()
+    passengers = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ticket
+        fields = ['id', 'qr_code', 'direction', 'passengers']
+
+    def get_qr_code(self, obj):
+        # Assuming you have a method to generate QR codes
+        return f"http://example.com/qr/{obj.id}"
+
+    def get_passengers(self, obj):
+        passengers = TicketPassenger.objects.filter(ticket=obj)
+        return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]

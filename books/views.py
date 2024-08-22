@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from books.models import Ticket, TicketPassenger
-from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer
+from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer, TicketDetailSerializer
 from buses.models import Bus
 from trips.models import Direction
 
@@ -94,13 +94,21 @@ class CreateTicket(APIView):
         serializer = TicketSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             try:
-                serializer.create(serializer.validated_data)
+                # Create the ticket and get both the ticket object and reserved places
+                ticket, reserved_places = serializer.create(serializer.validated_data)
+            except ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                print(e)
-                return Response(e.__str__(), status=status.HTTP_400_BAD_REQUEST)
-            return Response("OK", status=status.HTTP_200_OK)
-        print(serializer.errors)
-        return Response("NOT OK", status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Return the ticket ID along with the reserved places
+            return Response({
+                "message": "OK",
+                "ticket_id": ticket.id,
+                "reserved_places": reserved_places
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DirectionListView(APIView):
@@ -108,3 +116,17 @@ class DirectionListView(APIView):
         directions = Direction.objects.all()
         serializer = DirectionSerializer(directions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrievePaidTicket(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            ticket = Ticket.objects.filter(user=user, status="Payed").first()
+            if not ticket:
+                return Response({"detail": "No paid ticket found."}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = TicketDetailSerializer(ticket)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
