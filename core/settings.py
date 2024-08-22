@@ -28,6 +28,8 @@ NEED_APPS = [
     'trips',
     'buses',
     'books',
+    'trip_v2',
+    'trip',
 ]
 
 DJANGO_SETTINGS_APPS = [
