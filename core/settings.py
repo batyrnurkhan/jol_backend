@@ -16,6 +16,9 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ["*"]
 
+SMSC_LOGIN = 'joool'
+SMSC_PASSWORD = 'Joool2024'
+
 DOWNLOAD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',

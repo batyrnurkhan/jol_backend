@@ -1,4 +1,3 @@
-# accounts/views.py
 import logging
 from django.contrib.auth import authenticate
 from django.core.cache import cache
@@ -8,6 +7,7 @@ from rest_framework.generics import DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.conf import settings
 
 from books.models import Ticket
 from .models import Passenger
@@ -15,13 +15,13 @@ from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, Comp
     UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
-
+import requests
 import random
+from .sms_service import SMSCService
 
 logger = logging.getLogger(__name__)
 
 CustomUser = get_user_model()
-FIXED_VERIFICATION_CODE = "0000"  # This is the fixed verification code
 
 
 class PhoneNumberView(APIView):
@@ -30,11 +30,26 @@ class PhoneNumberView(APIView):
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            # Imitate sending SMS by directly using the fixed verification code
-            cache.set(phone_number, FIXED_VERIFICATION_CODE, timeout=300)  # Store code in cache for 5 minutes
+            phone_number = phone_number.replace('+', '')  # Уберите плюс, если это необходимо
+
+            verification_code = random.randint(1000, 9999)  # Генерация случайного кода
+
+            # Отправка SMS через smsc.kz
+            sms_service = SMSCService(settings.SMSC_LOGIN, settings.SMSC_PASSWORD)
+            try:
+                # Передаем `sender` в метод send_sms
+                sms_service.send_sms(phone_number, str(verification_code), sender='Joool')
+            except Exception as e:
+                logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
+
+            # Сохраняем код в кэше
+            cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
+            logger.info(f"Verification code {verification_code} set for {phone_number}")
             return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
+
         logger.error("Invalid data: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class VerifyCodeView(APIView):
@@ -46,16 +61,29 @@ class VerifyCodeView(APIView):
             stored_code = cache.get(phone_number)
 
             if stored_code and stored_code == code:
-                user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
-
-                # Generate a token for the user
-                token, _ = Token.objects.get_or_create(user=user)
-                return Response({"message": "Phone number verified", "user_id": user.id, "token": token.key},
-                                status=status.HTTP_200_OK)
+                # Сохраните статус верификации номера телефона
+                cache.set(f"{phone_number}_verified", True, timeout=300)
+                return Response({"message": "Phone number verified"}, status=status.HTTP_200_OK)
 
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterUserView(APIView):
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        if not cache.get(f"{phone_number}_verified"):
+            return Response({"message": "Phone number not verified"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Процесс создания пользователя
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = CustomUser.objects.create_user(phone_number=phone_number, password=request.data.get('password'))
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SetPasswordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -70,7 +98,6 @@ class SetPasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class CompleteProfileView(APIView):
     def post(self, request, user_id):
         try:
@@ -83,6 +110,7 @@ class CompleteProfileView(APIView):
             serializer.save()
             return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserProfileByTokenView(APIView):
     permission_classes = [permissions.IsAuthenticated]

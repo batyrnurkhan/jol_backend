@@ -4,6 +4,7 @@ from .views import *
 
 urlpatterns = [
     path('send-code/', PhoneNumberView.as_view(), name='send_code'),
+    path('register/', RegisterUserView.as_view(), name='register'),  # Новый маршрут для регистрации
 
     path('create-passenger/', CreatePassenger.as_view(), name='create_passenger'),
 
