@@ -3,6 +3,8 @@ import datetime
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from trip.models import Trip
 from trip_v2.models import Route, Stop
 from accounts.models import Passenger
 from books.models import Ticket, TicketPassenger
@@ -16,6 +18,20 @@ class BusFacilitiesSerializer(serializers.ModelSerializer):
         model = Bus
         fields = ['have_toilet', 'have_wifi', 'is_recumbent']
 
+class TripSerializer(serializers.ModelSerializer):
+    route = serializers.SerializerMethodField()
+    bus = BusFacilitiesSerializer()
+
+    class Meta:
+        model = Trip
+        fields = ['id', 'route', 'departure_time', 'start_date', 'end_date', 'ticket_price', 'bus', 'driver', 'frequency', 'weekdays', 'active']
+
+    def get_route(self, obj):
+        return {
+            "start_city": obj.route.start_city,
+            "end_city": obj.route.end_city,
+            "total_travel_time": obj.route.total_travel_time
+        }
 
 class TicketDirectionSerializer(serializers.ModelSerializer):
     free_places_count = serializers.SerializerMethodField()
@@ -66,7 +82,7 @@ class PassengerTicketSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.Serializer):
-    route = serializers.IntegerField()
+    trip = serializers.IntegerField()
     place_num = serializers.IntegerField(required=False)
     place_floor = serializers.IntegerField(required=False)
     tickets = PassengerTicketSerializer(many=True, required=False)
@@ -74,13 +90,13 @@ class TicketSerializer(serializers.Serializer):
     def create(self, validated_data):
         try:
             with transaction.atomic():
-                route = Route.objects.get(id=validated_data["route"])
+                trip = Trip.objects.get(id=validated_data["trip"])
                 place_num = validated_data.get("place_num")
                 place_floor = validated_data.get("place_floor")
                 tickets_data = validated_data.get("tickets", [])
 
                 ticket = Ticket()
-                ticket.direction = route
+                ticket.direction = trip.route  # Linking the ticket to the trip's route
                 ticket.user = self.context["request"].user if self.context["request"].user.is_authenticated else None
                 ticket.status = "Booked"
                 ticket.save()
@@ -88,12 +104,12 @@ class TicketSerializer(serializers.Serializer):
                 reserved_places = []
 
                 if place_num and place_floor:
-                    if TicketPassenger.objects.filter(ticket__direction=route, place_num=place_num, place_floor=place_floor).exists():
+                    if TicketPassenger.objects.filter(ticket__direction=trip.route, place_num=place_num, place_floor=place_floor).exists():
                         raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
                     TicketPassenger.objects.create(
                         ticket=ticket,
-                        user=self.context["request"].user,  # Сохраняем пользователя, если билет для него
+                        user=self.context["request"].user,
                         place_num=place_num,
                         place_floor=place_floor
                     )
@@ -107,7 +123,7 @@ class TicketSerializer(serializers.Serializer):
                         place_num = ticket_data["place_num"]
                         place_floor = ticket_data["place_floor"]
 
-                        if TicketPassenger.objects.filter(ticket__direction=route, place_num=place_num, place_floor=place_floor).exists():
+                        if TicketPassenger.objects.filter(ticket__direction=trip.route, place_num=place_num, place_floor=place_floor).exists():
                             raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
                         TicketPassenger.objects.create(
@@ -123,17 +139,17 @@ class TicketSerializer(serializers.Serializer):
                 else:
                     raise ValidationError("Either place_num and place_floor or tickets must be provided.")
 
-                return ticket, reserved_places  # Return both the ticket and reserved places
+                return ticket, reserved_places
 
-        except Route.DoesNotExist:
-            raise ValidationError("Route does not exist")
+        except Trip.DoesNotExist:
+            raise ValidationError("Trip does not exist")
         except ValidationError as e:
             raise e
         except Exception as e:
             raise ValidationError(str(e))
 
     class Meta:
-        fields = ["route", "place_num", "place_floor", "tickets"]
+        fields = ["trip", "place_num", "place_floor", "tickets"]
 
 
 class DirectionSerializer(serializers.ModelSerializer):
@@ -143,12 +159,12 @@ class DirectionSerializer(serializers.ModelSerializer):
 
 class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
-    route = TicketDirectionSerializer()
+    trip = TripSerializer()
     passengers = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
-        fields = ['id', 'qr_code', 'route', 'passengers']
+        fields = ['id', 'qr_code', 'trip', 'passengers']
 
     def get_qr_code(self, obj):
         # Assuming you have a method to generate QR codes
@@ -157,7 +173,6 @@ class TicketDetailSerializer(serializers.ModelSerializer):
     def get_passengers(self, obj):
         passengers = TicketPassenger.objects.filter(ticket=obj)
         return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]
-
 class StopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stop
