@@ -1,57 +1,322 @@
 [
-  {
-    "model": "buses.bus",
-    "pk": "123456",
-    "fields": {
-      "count_of_seats": 50,
-      "have_toilet": true,
-      "have_wifi": false,
-      "is_recumbent": true,
-      "floors": 1
+    {
+        "model": "buses.stamp",
+        "pk": 1,
+        "fields": {
+            "name": "Mercedes"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 2,
+        "fields": {
+            "name": "Volvo"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 3,
+        "fields": {
+            "name": "Scania"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 4,
+        "fields": {
+            "name": "MAN"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 5,
+        "fields": {
+            "name": "Iveco"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 6,
+        "fields": {
+            "name": "DAF"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 7,
+        "fields": {
+            "name": "Renault"
+        }
+    },
+    {
+        "model": "buses.stamp",
+        "pk": 8,
+        "fields": {
+            "name": "Setra"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 1,
+        "fields": {
+            "name": "Sprinter"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 2,
+        "fields": {
+            "name": "Tourismo"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 3,
+        "fields": {
+            "name": "Irizar"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 4,
+        "fields": {
+            "name": "Lion's Coach"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 5,
+        "fields": {
+            "name": "Crossway"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 6,
+        "fields": {
+            "name": "Futura"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 7,
+        "fields": {
+            "name": "Magelys"
+        }
+    },
+    {
+        "model": "buses.model",
+        "pk": 8,
+        "fields": {
+            "name": "S 431 DT"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 1,
+        "fields": {
+            "full_name": "John Doe",
+            "date_of_birth": "1980-01-15",
+            "license_number": "AB123456",
+            "license_issue_date": "2000-05-10"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 2,
+        "fields": {
+            "full_name": "Jane Smith",
+            "date_of_birth": "1985-03-22",
+            "license_number": "CD789012",
+            "license_issue_date": "2005-08-14"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 3,
+        "fields": {
+            "full_name": "Michael Johnson",
+            "date_of_birth": "1975-06-30",
+            "license_number": "EF345678",
+            "license_issue_date": "1995-03-20"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 4,
+        "fields": {
+            "full_name": "Emily Davis",
+            "date_of_birth": "1990-11-11",
+            "license_number": "GH901234",
+            "license_issue_date": "2010-12-01"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 5,
+        "fields": {
+            "full_name": "Robert Brown",
+            "date_of_birth": "1965-08-05",
+            "license_number": "IJ567890",
+            "license_issue_date": "1985-09-15"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 6,
+        "fields": {
+            "full_name": "Jessica Wilson",
+            "date_of_birth": "1978-03-18",
+            "license_number": "KL123456",
+            "license_issue_date": "1998-07-22"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 7,
+        "fields": {
+            "full_name": "William Garcia",
+            "date_of_birth": "1982-02-25",
+            "license_number": "MN789012",
+            "license_issue_date": "2002-10-19"
+        }
+    },
+    {
+        "model": "buses.driver",
+        "pk": 8,
+        "fields": {
+            "full_name": "Patricia Martinez",
+            "date_of_birth": "1988-12-17",
+            "license_number": "OP345678",
+            "license_issue_date": "2008-04-27"
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "123456",
+        "fields": {
+            "name": "Bus A",
+            "stamp": 1,
+            "model": 1,
+            "state_number": "123 ABC 01",
+            "VIN": "1HGCM82633A004352",
+            "count_of_seats": 40,
+            "have_toilet": true,
+            "have_wifi": true,
+            "is_recumbent": false,
+            "floors": 1
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "234567",
+        "fields": {
+            "name": "Bus B",
+            "stamp": 2,
+            "model": 2,
+            "state_number": "456 DEF 02",
+            "VIN": "2HGCM82633A004353",
+            "count_of_seats": 50,
+            "have_toilet": false,
+            "have_wifi": true,
+            "is_recumbent": true,
+            "floors": 2
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "345678",
+        "fields": {
+            "name": "Bus C",
+            "stamp": 3,
+            "model": 3,
+            "state_number": "789 GHI 03",
+            "VIN": "3HGCM82633A004354",
+            "count_of_seats": 45,
+            "have_toilet": true,
+            "have_wifi": false,
+            "is_recumbent": true,
+            "floors": 2
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "456789",
+        "fields": {
+            "name": "Bus D",
+            "stamp": 4,
+            "model": 4,
+            "state_number": "101 JKL 04",
+            "VIN": "4HGCM82633A004355",
+            "count_of_seats": 55,
+            "have_toilet": false,
+            "have_wifi": true,
+            "is_recumbent": false,
+            "floors": 1
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "567890",
+        "fields": {
+            "name": "Bus E",
+            "stamp": 5,
+            "model": 5,
+            "state_number": "112 MNO 05",
+            "VIN": "5HGCM82633A004356",
+            "count_of_seats": 35,
+            "have_toilet": true,
+            "have_wifi": true,
+            "is_recumbent": false,
+            "floors": 1
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "678901",
+        "fields": {
+            "name": "Bus F",
+            "stamp": 6,
+            "model": 6,
+            "state_number": "223 PQR 06",
+            "VIN": "6HGCM82633A004357",
+            "count_of_seats": 60,
+            "have_toilet": true,
+            "have_wifi": true,
+            "is_recumbent": true,
+            "floors": 2
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "789012",
+        "fields": {
+            "name": "Bus G",
+            "stamp": 7,
+            "model": 7,
+            "state_number": "334 STU 07",
+            "VIN": "7HGCM82633A004358",
+            "count_of_seats": 30,
+            "have_toilet": false,
+            "have_wifi": true,
+            "is_recumbent": false,
+            "floors": 1
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "890123",
+        "fields": {
+            "name": "Bus H",
+            "stamp": 8,
+            "model": 8,
+            "state_number": "445 VWX 08",
+            "VIN": "8HGCM82633A004359",
+            "count_of_seats": 65,
+            "have_toilet": true,
+            "have_wifi": false,
+            "is_recumbent": true,
+            "floors": 2
+        }
     }
-  },
-  {
-    "model": "buses.bus",
-    "pk": "234567",
-    "fields": {
-      "count_of_seats": 30,
-      "have_toilet": false,
-      "have_wifi": true,
-      "is_recumbent": false,
-      "floors": 2
-    }
-  },
-  {
-    "model": "buses.bus",
-    "pk": "345678",
-    "fields": {
-      "count_of_seats": 40,
-      "have_toilet": true,
-      "have_wifi": true,
-      "is_recumbent": false,
-      "floors": 1
-    }
-  },
-  {
-    "model": "buses.bus",
-    "pk": "456789",
-    "fields": {
-      "count_of_seats": 60,
-      "have_toilet": true,
-      "have_wifi": true,
-      "is_recumbent": true,
-      "floors": 2
-    }
-  },
-  {
-    "model": "buses.bus",
-    "pk": "567890",
-    "fields": {
-      "count_of_seats": 45,
-      "have_toilet": false,
-      "have_wifi": false,
-      "is_recumbent": true,
-      "floors": 1
-    }
-  }
 ]
