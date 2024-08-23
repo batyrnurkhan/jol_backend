@@ -58,6 +58,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.UsernameBackend',  # for Bus station staff
+    'accounts.backends.PhoneNumberBackend',  # for regular users
+    'django.contrib.auth.backends.ModelBackend',  # default backend
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

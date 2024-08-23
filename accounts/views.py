@@ -56,32 +56,25 @@ class VerifyCodeView(APIView):
     def post(self, request):
         serializer = VerificationCodeSerializer(data=request.data)
         if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
+            phone_number = serializer.validated_data['phone_number'].replace('+', '')
             code = serializer.validated_data['code']
             stored_code = cache.get(phone_number)
 
             if stored_code and stored_code == code:
-                # Сохраните статус верификации номера телефона
+                # Mark the phone number as verified
                 cache.set(f"{phone_number}_verified", True, timeout=300)
-                return Response({"message": "Phone number verified"}, status=status.HTTP_200_OK)
+
+                # Get or create the user associated with this phone number
+                user, created = CustomUser.objects.get_or_create(phone_number=phone_number)
+
+                # Generate or get the token for this user
+                token, created = Token.objects.get_or_create(user=user)
+
+                # Return the token and user_id to the client
+                return Response({"message": "Phone number verified", "token": token.key, "user_id": user.id}, status=status.HTTP_200_OK)
 
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class RegisterUserView(APIView):
-    def post(self, request):
-        phone_number = request.data.get('phone_number')
-        if not cache.get(f"{phone_number}_verified"):
-            return Response({"message": "Phone number not verified"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Процесс создания пользователя
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = CustomUser.objects.create_user(phone_number=phone_number, password=request.data.get('password'))
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -99,16 +92,34 @@ class SetPasswordView(APIView):
 
 
 class CompleteProfileView(APIView):
-    def post(self, request, user_id):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id=None):
+        # Ensure the user is trying to update their own profile
+        if request.user.id != user_id:
+            return Response({"error": "You are not authorized to update this profile."}, status=status.HTTP_403_FORBIDDEN)
+
         try:
             user = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
-            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = CompleteProfileSerializer(instance=user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+
+            # Check if a Passenger entry already exists for this user
+            if not Passenger.objects.filter(user=user).exists():
+                # Create a new Passenger instance
+                Passenger.objects.create(
+                    user=user,
+                    full_name=serializer.validated_data.get('full_name', ''),
+                    document_type=serializer.validated_data.get('document_type', ''),
+                    document_number_or_iin=serializer.validated_data.get('document_number_or_iin', ''),
+                    birth_date=serializer.validated_data.get('birth_date', None)
+                )
+
+            return Response({"message": "Profile updated successfully, and passenger created."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -126,16 +137,22 @@ class UserProfileByTokenView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
-            password = serializer.validated_data['password']
-            user = authenticate(request, phone_number=phone_number, password=password)
-            if user:
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key}, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if 'username' in request.data:
+            # Handle Bus station staff login
+            username = request.data.get('username')
+            password = request.data.get('password')
+            user = authenticate(request, username=username, password=password)
+        else:
+            # Handle regular user login with phone number
+            phone_number = request.data.get('phone_number')
+            password = request.data.get('password')
+            user = authenticate(request, username=phone_number, password=password)
+
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class UserProfileBasicView(APIView):
@@ -258,3 +275,28 @@ class LogoutView(APIView):
             return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
         except Token.DoesNotExist:
             return Response({"error": "Token not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StaffLoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data.get('username')
+            password = serializer.validated_data.get('password')
+            user = authenticate(request, username=username, password=password)
+
+            if user:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MyPassengersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the passengers associated with the logged-in user
+        passengers = Passenger.objects.filter(user=request.user)
+        serializer = PassengerSerializer(passengers, many=True)
+        return Response(serializer.data, status=200)

@@ -27,8 +27,14 @@ class CompleteProfileSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=15)
+    username = serializers.CharField(max_length=150, required=False)
+    phone_number = serializers.CharField(max_length=15, required=False)
     password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if not data.get('username') and not data.get('phone_number'):
+            raise serializers.ValidationError("Username or phone number is required.")
+        return data
 
 
 # accounts/serializers.py
@@ -63,32 +69,51 @@ class MyTicketPassengerSerializer(serializers.ModelSerializer):
         fields = ['place_num', 'place_floor']
 
 class MyTicketSerializer(serializers.ModelSerializer):
-    direction_name = serializers.SerializerMethodField()
+    from_point = serializers.SerializerMethodField()
     from_date = serializers.SerializerMethodField()
-    to_date = serializers.SerializerMethodField()
     from_time = serializers.SerializerMethodField()
+    to_point = serializers.SerializerMethodField()
+    to_date = serializers.SerializerMethodField()
     to_time = serializers.SerializerMethodField()
-    price = serializers.IntegerField(source='direction.price')
-    passengers = MyTicketPassengerSerializer(source='passenger_tickets', many=True)
-    status = serializers.CharField()  # Add the status field directly
+    bus = serializers.SerializerMethodField()
+    free_places_count = serializers.IntegerField(source='direction.free_places_count')
+    price = serializers.DecimalField(source='direction.price', max_digits=10, decimal_places=2)
+    status = serializers.CharField()
 
     class Meta:
         model = Ticket
-        fields = ['direction_name', 'from_date', 'to_date', 'from_time', 'to_time', 'price', 'passengers', 'status']
+        fields = [
+            'id', 'from_point', 'from_date', 'from_time', 'to_point',
+            'to_date', 'to_time', 'price', 'free_places_count', 'bus', 'status'
+        ]
 
-    def get_direction_name(self, obj):
-        return f"{obj.direction.from_point.name} to {obj.direction.to_point.name}"
+    def get_from_point(self, obj):
+        return {
+            "id": obj.direction.from_point.id,
+            "name": obj.direction.from_point.name
+        }
+
+    def get_to_point(self, obj):
+        return {
+            "id": obj.direction.to_point.id,
+            "name": obj.direction.to_point.name
+        }
 
     def get_from_date(self, obj):
-        return obj.direction.from_datetime.date().strftime('%d %b')
+        return obj.direction.from_datetime.strftime('%Y-%m-%d')
 
     def get_to_date(self, obj):
-        return obj.direction.to_datetime.date().strftime('%d %b')
+        return obj.direction.to_datetime.strftime('%Y-%m-%d')
 
     def get_from_time(self, obj):
-        return obj.direction.from_datetime.time().strftime('%H:%M')
+        return obj.direction.from_datetime.strftime('%H:%M')
 
     def get_to_time(self, obj):
-        return obj.direction.to_datetime.time().strftime('%H:%M')
+        return obj.direction.to_datetime.strftime('%H:%M')
 
-
+    def get_bus(self, obj):
+        return {
+            "have_toilet": obj.direction.bus.have_toilet,
+            "have_wifi": obj.direction.bus.have_wifi,
+            "is_recumbent": obj.direction.bus.is_recumbent
+        }

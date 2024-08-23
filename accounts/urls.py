@@ -4,17 +4,20 @@ from .views import *
 
 urlpatterns = [
     path('send-code/', PhoneNumberView.as_view(), name='send_code'),
-    path('register/', RegisterUserView.as_view(), name='register'),  # Новый маршрут для регистрации
 
     path('create-passenger/', CreatePassenger.as_view(), name='create_passenger'),
 
     path('verify-code/', VerifyCodeView.as_view(), name='verify_code'),
-    path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
 
     path('set-password/', SetPasswordView.as_view(), name='set_password'),
 
     path('login/', LoginView.as_view(), name='login'),
+    path('staff-login/', StaffLoginView.as_view(), name='staff_login'),
+
+
     path('profile/', UserProfileBasicView.as_view(), name='profile'),
+    path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
+
     path('profile/personal-info/', UserProfileView.as_view(), name='personal_info'),
     path('profile/personal-info/update/', UpdatePersonalInfoView.as_view(), name='update_personal_info'),
     path('profile/passenger-info/', PassengerInfoView.as_view(), name='passenger_info'),
@@ -26,6 +29,7 @@ urlpatterns = [
 
     path('my-tickets/', MyTicketsView.as_view(), name='my-tickets'),
     path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
+    path('my-passengers/', MyPassengersView.as_view(), name='my_passengers'),
 
     path('delete-user/', LogoutView.as_view(), name='logout'),
 

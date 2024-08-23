@@ -26,22 +26,22 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    username = None
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
     full_name = models.CharField(_('ФИО'), max_length=255, blank=True, null=True)
     document_type = models.CharField(_('тип документа'), max_length=50, blank=True, null=True)
-    document_number_or_iin = models.CharField(_('номер документа или ИИН'), max_length=100, unique=True, blank=True,
-                                              null=True)
+    document_number_or_iin = models.CharField(_('номер документа или ИИН'), max_length=100, unique=True, blank=True, null=True)
     birth_date = models.DateField(_('дата рождения'), blank=True, null=True)
     email = models.EmailField(_('электронная почта'), unique=True, blank=True, null=True)
     phone_number = models.CharField(_('номер телефона'), max_length=15, unique=True)
 
-    USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'phone_number'  # Primary identifier for regular users
+    REQUIRED_FIELDS = ['username']  # Make username required for staff
 
     objects = CustomUserManager()
 
     def __str__(self):
         return self.phone_number
+
 
 
 class Passenger(models.Model):
