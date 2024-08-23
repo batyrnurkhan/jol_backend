@@ -1,0 +1,194 @@
+[
+    {
+        "model": "trip.trip",
+        "pk": 1,
+        "fields": {
+            "route": 1,
+            "bus": "123456",
+            "driver": 1,
+            "departure_time": "08:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "5000.00",
+            "frequency": "Daily",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": true,
+                "Wednesday": true,
+                "Thursday": true,
+                "Friday": true,
+                "Saturday": true,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 2,
+        "fields": {
+            "route": 2,
+            "bus": "234567",
+            "driver": 2,
+            "departure_time": "09:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "7500.00",
+            "frequency": "Daily",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": true,
+                "Wednesday": true,
+                "Thursday": true,
+                "Friday": true,
+                "Saturday": true,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 3,
+        "fields": {
+            "route": 3,
+            "bus": "345678",
+            "driver": 3,
+            "departure_time": "10:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "6000.00",
+            "frequency": "Several times a week",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": false,
+                "Wednesday": true,
+                "Thursday": false,
+                "Friday": true,
+                "Saturday": false,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 4,
+        "fields": {
+            "route": 4,
+            "bus": "456789",
+            "driver": 4,
+            "departure_time": "11:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "7000.00",
+            "frequency": "Daily",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": true,
+                "Wednesday": true,
+                "Thursday": true,
+                "Friday": true,
+                "Saturday": true,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 5,
+        "fields": {
+            "route": 5,
+            "bus": "567890",
+            "driver": 5,
+            "departure_time": "12:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "5500.00",
+            "frequency": "Several times a week",
+            "weekdays": {
+                "Monday": false,
+                "Tuesday": true,
+                "Wednesday": false,
+                "Thursday": true,
+                "Friday": false,
+                "Saturday": true,
+                "Sunday": false
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 6,
+        "fields": {
+            "route": 6,
+            "bus": "678901",
+            "driver": 6,
+            "departure_time": "13:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "8000.00",
+            "frequency": "Daily",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": true,
+                "Wednesday": true,
+                "Thursday": true,
+                "Friday": true,
+                "Saturday": true,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 7,
+        "fields": {
+            "route": 7,
+            "bus": "789012",
+            "driver": 7,
+            "departure_time": "14:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "6500.00",
+            "frequency": "Several times a week",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": false,
+                "Wednesday": true,
+                "Thursday": false,
+                "Friday": true,
+                "Saturday": false,
+                "Sunday": true
+            },
+            "active": true
+        }
+    },
+    {
+        "model": "trip.trip",
+        "pk": 8,
+        "fields": {
+            "route": 8,
+            "bus": "890123",
+            "driver": 8,
+            "departure_time": "15:00:00",
+            "start_date": "2024-09-01",
+            "end_date": "2024-09-30",
+            "ticket_price": "9000.00",
+            "frequency": "Daily",
+            "weekdays": {
+                "Monday": true,
+                "Tuesday": true,
+                "Wednesday": true,
+                "Thursday": true,
+                "Friday": true,
+                "Saturday": true,
+                "Sunday": true
+            },
+            "active": true
+        }
+    }
+]

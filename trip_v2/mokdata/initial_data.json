@@ -1,0 +1,162 @@
+[
+    {
+        "model": "trip_v2.route",
+        "pk": 1,
+        "fields": {
+            "start_city": "Almaty",
+            "end_city": "Astana",
+            "total_travel_time": "07:30:00",
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 2,
+        "fields": {
+            "start_city": "Shymkent",
+            "end_city": "Almaty",
+            "total_travel_time": "10:00:00",
+            "created_at": "2024-01-02T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 3,
+        "fields": {
+            "start_city": "Aktau",
+            "end_city": "Atyrau",
+            "total_travel_time": "06:00:00",
+            "created_at": "2024-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 4,
+        "fields": {
+            "start_city": "Kostanay",
+            "end_city": "Kokshetau",
+            "total_travel_time": "05:30:00",
+            "created_at": "2024-01-04T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 5,
+        "fields": {
+            "start_city": "Taraz",
+            "end_city": "Shymkent",
+            "total_travel_time": "03:00:00",
+            "created_at": "2024-01-05T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 6,
+        "fields": {
+            "start_city": "Uralsk",
+            "end_city": "Aktobe",
+            "total_travel_time": "08:00:00",
+            "created_at": "2024-01-06T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 7,
+        "fields": {
+            "start_city": "Pavlodar",
+            "end_city": "Semey",
+            "total_travel_time": "04:00:00",
+            "created_at": "2024-01-07T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 8,
+        "fields": {
+            "start_city": "Karaganda",
+            "end_city": "Almaty",
+            "total_travel_time": "12:00:00",
+            "created_at": "2024-01-08T00:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 1,
+        "fields": {
+            "route": 1,
+            "name": "Kapchagay",
+            "travel_time_from_start": "02:00:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 2,
+        "fields": {
+            "route": 1,
+            "name": "Balqash",
+            "travel_time_from_start": "04:30:00",
+            "stop_time": "00:20:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 3,
+        "fields": {
+            "route": 2,
+            "name": "Taraz",
+            "travel_time_from_start": "05:00:00",
+            "stop_time": "00:10:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 4,
+        "fields": {
+            "route": 2,
+            "name": "Korday",
+            "travel_time_from_start": "07:30:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 5,
+        "fields": {
+            "route": 3,
+            "name": "Zhanaozen",
+            "travel_time_from_start": "02:00:00",
+            "stop_time": "00:10:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 6,
+        "fields": {
+            "route": 3,
+            "name": "Beineu",
+            "travel_time_from_start": "04:00:00",
+            "stop_time": "00:20:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 7,
+        "fields": {
+            "route": 4,
+            "name": "Rudny",
+            "travel_time_from_start": "01:30:00",
+            "stop_time": "00:10:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 8,
+        "fields": {
+            "route": 4,
+            "name": "Esil",
+            "travel_time_from_start": "04:00:00",
+            "stop_time": "00:15:00"
+        }
+    }
+]
