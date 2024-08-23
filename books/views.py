@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from trip_v2.models import Route, Stop
 from books.models import Ticket, TicketPassenger
 from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer, TicketDetailSerializer
 from buses.models import Bus
@@ -17,73 +17,72 @@ from trips.models import Direction
 # Create your views here.
 class DirectionDates(APIView):
     def get(self, request):
-        from_point = request.GET.get('from_point')
-        to_point = request.GET.get('to_point')
+        from_city = request.GET.get('from_point')
+        to_city = request.GET.get('to_point')
 
-        if not (from_point and to_point):
+        if not (from_city and to_city):
             return Response("Need from_point and to_point", status=status.HTTP_400_BAD_REQUEST)
 
-        directions = Direction.objects.filter(
-            from_point=from_point,
-            to_point=to_point,
-            from_datetime__gte=datetime.datetime.now()
-        ).order_by('from_datetime__date', 'price')
+        routes = Route.objects.filter(
+            start_city=from_city,
+            end_city=to_city,
+            created_at__gte=datetime.datetime.now()
+        ).order_by('created_at', 'total_travel_time')
 
-        # Dictionary to keep track of the minimum price per date
-        min_price_per_date = {}
+        # Dictionary to keep track of the minimum travel time per route
+        min_time_per_route = {}
 
-        for direction in directions:
-            direction_date = direction.from_datetime.date()
-            if direction.free_places_count() > 0:
-                if direction_date not in min_price_per_date:
-                    min_price_per_date[direction_date] = direction
-                elif direction.price < min_price_per_date[direction_date].price:
-                    min_price_per_date[direction_date] = direction
+        for route in routes:
+            if route.stops.exists():
+                if route not in min_time_per_route:
+                    min_time_per_route[route] = route
+                elif route.total_travel_time < min_time_per_route[route].total_travel_time:
+                    min_time_per_route[route] = route
 
         # Convert the dictionary to a list of dictionaries for the context
-        directions_with_free_seats = [
-            {'date': date, 'price': dir_obj.price}
-            for date, dir_obj in min_price_per_date.items()
+        routes_with_times = [
+            {'date': route.created_at.date(), 'total_travel_time': route.total_travel_time}
+            for route in min_time_per_route.values()
         ]
 
-        return Response(directions_with_free_seats, status=status.HTTP_200_OK)
+        return Response(routes_with_times, status=status.HTTP_200_OK)
 
 
 class GetTicket(APIView):
     def get(self, request):
-        from_point = request.GET.get('from_point')
-        to_point = request.GET.get('to_point')
+        from_city = request.GET.get('from_point')
+        to_city = request.GET.get('to_point')
         date_str = request.GET.get('date')
         passenger_count = int(request.GET.get('passenger_count'))
 
         date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
 
-        directions = Direction.objects.filter(
-            from_point=from_point,
-            to_point=to_point,
-            from_datetime__date=date,
-        ).order_by("price")
+        routes = Route.objects.filter(
+            start_city=from_city,
+            end_city=to_city,
+            created_at__date=date,
+        ).order_by("total_travel_time")
 
-        available_dirs = []
-        for direction in directions:
-            if direction.free_places_count() >= passenger_count:
-                available_dirs.append(direction)
+        available_routes = []
+        for route in routes:
+            if route.stops.count() >= passenger_count:
+                available_routes.append(route)
 
-        serializer = TicketDirectionSerializer(available_dirs, many=True)
+        serializer = TicketDirectionSerializer(available_routes, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
 class DirectionPlaces(APIView):
     def get(self, request):
-        direction_id = request.GET.get('direction_id')
-        direction = Direction.objects.get(id=direction_id)
-        tickets = Ticket.objects.filter(direction=direction).filter(Q(status="Payed") | Q(status="Booked"))
-        print(tickets)
+        route_id = request.GET.get('direction_id')
+        route = Route.objects.get(id=route_id)
+        tickets = Ticket.objects.filter(direction=route).filter(Q(status="Payed") | Q(status="Booked"))
+
         ticket_places = TicketPassenger.objects.filter(ticket__in=tickets).values('place_num', 'place_floor')
         tickets_list = {
-            "places_count": direction.bus.count_of_seats,
-            "floors_count": direction.bus.floors,
+            "places_count": route.stops.count(),
             "busy_tickets": list(ticket_places)
         }
         return Response(tickets_list, status=status.HTTP_200_OK)
@@ -94,14 +93,12 @@ class CreateTicket(APIView):
         serializer = TicketSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             try:
-                # Create the ticket and get both the ticket object and reserved places
                 ticket, reserved_places = serializer.create(serializer.validated_data)
             except ValidationError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Return the ticket ID along with the reserved places
             return Response({
                 "message": "OK",
                 "ticket_id": ticket.id,
