@@ -28,7 +28,6 @@ DOWNLOAD_APPS = [
 NEED_APPS = [
     'accounts',
     'payments',
-    'trips',
     'buses',
     'books',
     'trip_v2',

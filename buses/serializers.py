@@ -16,7 +16,7 @@ class BusListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bus
-        fields = ['model_stamp', 'state_number', 'count_of_seats']
+        fields = ['id', 'model_stamp', 'state_number', 'count_of_seats']
 
     def get_model_stamp(self, obj):
         return f"{obj.stamp.name} {obj.model.name}" if obj.stamp and obj.model else ""
@@ -30,4 +30,4 @@ class DriverCreateUpdateSerializer(serializers.ModelSerializer):
 class DriverListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
-        fields = ['full_name', 'date_of_birth']
+        fields = ['id', 'full_name', 'date_of_birth', 'picture']

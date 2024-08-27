@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from accounts.models import CustomUser, Passenger
-from trips.models import Direction
+from trip.models import Trip
 
 
 # Create your models here.
@@ -13,7 +13,7 @@ class Ticket(models.Model):
         ("Expired", "Expired"),
     ]
 
-    direction = models.ForeignKey(Direction, on_delete=models.CASCADE, related_name="tickets")
+    direction = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="tickets")
     status = models.CharField(max_length=8, choices=TICKET_STATUSES, default="Booked")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
 

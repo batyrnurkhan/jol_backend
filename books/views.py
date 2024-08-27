@@ -9,9 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from trip_v2.models import Route, Stop
 from books.models import Ticket, TicketPassenger
-from books.serializers import TicketDirectionSerializer, TicketSerializer, DirectionSerializer, TicketDetailSerializer
+from books.serializers import TicketDirectionSerializer, TicketSerializer, TicketDetailSerializer
 from buses.models import Bus
-from trips.models import Direction
 
 
 # Create your views here.

@@ -12,12 +12,11 @@ urlpatterns = [
     path('set-password/', SetPasswordView.as_view(), name='set_password'),
 
     path('login/', LoginView.as_view(), name='login'),
-    path('staff-login/', StaffLoginView.as_view(), name='staff_login'),
 
+    path('staff-login/', StaffLoginView.as_view(), name='staff_login'),
 
     path('profile/', UserProfileBasicView.as_view(), name='profile'),
     path('complete-profile/<int:user_id>/', CompleteProfileView.as_view(), name='complete_profile'),
-
     path('profile/personal-info/', UserProfileView.as_view(), name='personal_info'),
     path('profile/personal-info/update/', UpdatePersonalInfoView.as_view(), name='update_personal_info'),
     path('profile/passenger-info/', PassengerInfoView.as_view(), name='passenger_info'),
@@ -28,7 +27,9 @@ urlpatterns = [
     path('profile/support/', SupportView.as_view(), name='support'),
 
     path('my-tickets/', MyTicketsView.as_view(), name='my-tickets'),
+
     path('user-profile/', UserProfileByTokenView.as_view(), name='user_profile_by_token'),
+
     path('my-passengers/', MyPassengersView.as_view(), name='my_passengers'),
 
     path('delete-user/', LogoutView.as_view(), name='logout'),

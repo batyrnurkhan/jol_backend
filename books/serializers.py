@@ -3,14 +3,10 @@ import datetime
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
-from trip.models import Trip
 from trip_v2.models import Route, Stop
-from accounts.models import Passenger
 from books.models import Ticket, TicketPassenger
 from buses.models import Bus
-from trips.models import Direction
-from trips.serializers import BusStationNameSerializer, PointNameSerializer
+from trip.models import Trip
 
 
 class BusFacilitiesSerializer(serializers.ModelSerializer):
@@ -150,12 +146,6 @@ class TicketSerializer(serializers.Serializer):
 
     class Meta:
         fields = ["trip", "place_num", "place_floor", "tickets"]
-
-
-class DirectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Direction
-        fields = '__all__'
 
 class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
