@@ -46,26 +46,43 @@ class DirectionDates(APIView):
 
 class GetTicket(APIView):
     def get(self, request):
-        from_city = request.GET.get('from_point')
-        to_city = request.GET.get('to_point')
+        from_city_id = request.GET.get('from')
+        to_city_id = request.GET.get('to')
         date_str = request.GET.get('date')
         passenger_count = int(request.GET.get('passenger_count'))
 
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+        if not (from_city_id and to_city_id and date_str):
+            return Response({"error": "from, to, and date are required parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Parse the date string to a date object
+        try:
+            travel_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({"error": "Invalid date format. Expected YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter routes based on the cities
         routes = Route.objects.filter(
-            start_city=from_city,
-            end_city=to_city,
-            created_at__date=date,
+            start_city_id=from_city_id,
+            end_city_id=to_city_id
         ).order_by("total_travel_time")
 
-        available_routes = []
+        available_trips = []
         for route in routes:
-            if route.stops.count() >= passenger_count:
-                available_routes.append(route)
+            trips = Trip.objects.filter(
+                route=route,
+                start_date__lte=travel_date,  # Ensure the trip is scheduled on or before the travel date
+                end_date__gte=travel_date      # Ensure the trip is ongoing on or after the travel date
+            )
 
-        serializer = TicketDirectionSerializer(available_routes, many=True)
+            for trip in trips:
+                if trip.bus.count_of_seats >= passenger_count:  # Ensure there are enough seats
+                    available_trips.append(trip)
 
+        if not available_trips:
+            return Response([], status=status.HTTP_200_OK)  # Return an empty list if no trips match
+
+        # Serialize the available trips
+        serializer = TicketDirectionSerializer(available_trips, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
