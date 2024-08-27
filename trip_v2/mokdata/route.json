@@ -1,0 +1,52 @@
+[
+    {
+        "model": "trip_v2.route",
+        "pk": 1,
+        "fields": {
+            "start_city": 1,
+            "end_city": 2,
+            "total_travel_time": "07:00:00",
+            "created_at": "2024-08-27T10:00:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 2,
+        "fields": {
+            "start_city": 3,
+            "end_city": 4,
+            "total_travel_time": "12:00:00",
+            "created_at": "2024-08-27T10:10:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 3,
+        "fields": {
+            "start_city": 5,
+            "end_city": 6,
+            "total_travel_time": "10:30:00",
+            "created_at": "2024-08-27T10:20:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 4,
+        "fields": {
+            "start_city": 7,
+            "end_city": 8,
+            "total_travel_time": "06:45:00",
+            "created_at": "2024-08-27T10:30:00Z"
+        }
+    },
+    {
+        "model": "trip_v2.route",
+        "pk": 5,
+        "fields": {
+            "start_city": 9,
+            "end_city": 10,
+            "total_travel_time": "05:00:00",
+            "created_at": "2024-08-27T10:40:00Z"
+        }
+    }
+]

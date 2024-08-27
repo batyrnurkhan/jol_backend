@@ -1,12 +1,16 @@
 import datetime
 import json
 
+from django.db import connection
 from django.db.models import Min, F, Q
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from trip.models import Trip
 from trip_v2.models import Route, Stop
 from books.models import Ticket, TicketPassenger
 from books.serializers import TicketDirectionSerializer, TicketSerializer, TicketDetailSerializer
@@ -16,36 +20,29 @@ from buses.models import Bus
 # Create your views here.
 class DirectionDates(APIView):
     def get(self, request):
-        from_city = request.GET.get('from_point')
-        to_city = request.GET.get('to_point')
+        from_city_id = request.GET.get('from_point')
+        to_city_id = request.GET.get('to_point')
 
-        if not (from_city and to_city):
-            return Response("Need from_point and to_point", status=status.HTTP_400_BAD_REQUEST)
+        if not (from_city_id and to_city_id):
+            return Response({"error": "Need from_point and to_point"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Assuming you have a mapping or a way to get city names from city IDs
         routes = Route.objects.filter(
-            start_city=from_city,
-            end_city=to_city,
-            created_at__gte=datetime.datetime.now()
-        ).order_by('created_at', 'total_travel_time')
+            start_city_id=from_city_id,  # Filter by city ID
+            end_city_id=to_city_id       # Filter by city ID
+        ).order_by('created_at')
 
-        # Dictionary to keep track of the minimum travel time per route
-        min_time_per_route = {}
+        if not routes.exists():
+            return Response({"message": "No routes found between the specified cities"}, status=status.HTTP_404_NOT_FOUND)
 
+        tickets_data = []
         for route in routes:
-            if route.stops.exists():
-                if route not in min_time_per_route:
-                    min_time_per_route[route] = route
-                elif route.total_travel_time < min_time_per_route[route].total_travel_time:
-                    min_time_per_route[route] = route
+            trips = Trip.objects.filter(route=route)
+            for trip in trips:
+                serializer = TicketDirectionSerializer(trip)
+                tickets_data.append(serializer.data)
 
-        # Convert the dictionary to a list of dictionaries for the context
-        routes_with_times = [
-            {'date': route.created_at.date(), 'total_travel_time': route.total_travel_time}
-            for route in min_time_per_route.values()
-        ]
-
-        return Response(routes_with_times, status=status.HTTP_200_OK)
-
+        return Response(tickets_data, status=status.HTTP_200_OK)
 
 class GetTicket(APIView):
     def get(self, request):
@@ -72,16 +69,19 @@ class GetTicket(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 class DirectionPlaces(APIView):
     def get(self, request):
         route_id = request.GET.get('direction_id')
-        route = Route.objects.get(id=route_id)
-        tickets = Ticket.objects.filter(direction=route).filter(Q(status="Payed") | Q(status="Booked"))
+
+        # Fetch the Trip instances associated with this route_id
+        trips = Trip.objects.filter(route_id=route_id)
+
+        # Now filter tickets by these trips
+        tickets = Ticket.objects.filter(direction__in=trips).filter(Q(status="Payed") | Q(status="Booked"))
 
         ticket_places = TicketPassenger.objects.filter(ticket__in=tickets).values('place_num', 'place_floor')
         tickets_list = {
-            "places_count": route.stops.count(),
+            "places_count": tickets.count(),
             "busy_tickets": list(ticket_places)
         }
         return Response(tickets_list, status=status.HTTP_200_OK)

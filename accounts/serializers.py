@@ -76,8 +76,8 @@ class MyTicketSerializer(serializers.ModelSerializer):
     to_date = serializers.SerializerMethodField()
     to_time = serializers.SerializerMethodField()
     bus = serializers.SerializerMethodField()
-    free_places_count = serializers.IntegerField(source='direction.free_places_count')
-    price = serializers.DecimalField(source='direction.price', max_digits=10, decimal_places=2)
+    free_places_count = serializers.SerializerMethodField()
+    price = serializers.DecimalField(source='direction.ticket_price', max_digits=10, decimal_places=2)
     status = serializers.CharField()
 
     class Meta:
@@ -89,27 +89,27 @@ class MyTicketSerializer(serializers.ModelSerializer):
 
     def get_from_point(self, obj):
         return {
-            "id": obj.direction.from_point.id,
-            "name": obj.direction.from_point.name
+            "id": obj.direction.route.start_city.id,
+            "name": obj.direction.route.start_city.name
         }
 
     def get_to_point(self, obj):
         return {
-            "id": obj.direction.to_point.id,
-            "name": obj.direction.to_point.name
+            "id": obj.direction.route.end_city.id,
+            "name": obj.direction.route.end_city.name
         }
 
     def get_from_date(self, obj):
-        return obj.direction.from_datetime.strftime('%Y-%m-%d')
+        return obj.direction.start_date.strftime('%Y-%m-%d')
 
     def get_to_date(self, obj):
-        return obj.direction.to_datetime.strftime('%Y-%m-%d')
+        return obj.direction.end_date.strftime('%Y-%m-%d')
 
     def get_from_time(self, obj):
-        return obj.direction.from_datetime.strftime('%H:%M')
+        return obj.direction.departure_time.strftime('%H:%M')
 
     def get_to_time(self, obj):
-        return obj.direction.to_datetime.strftime('%H:%M')
+        return obj.direction.departure_time.strftime('%H:%M')
 
     def get_bus(self, obj):
         return {
@@ -117,3 +117,17 @@ class MyTicketSerializer(serializers.ModelSerializer):
             "have_wifi": obj.direction.bus.have_wifi,
             "is_recumbent": obj.direction.bus.is_recumbent
         }
+
+    def get_free_places_count(self, obj):
+        # Get all tickets associated with the current trip
+        tickets = Ticket.objects.filter(direction=obj.direction)
+
+        # Count all passengers associated with these tickets
+        occupied_seats = TicketPassenger.objects.filter(ticket__in=tickets).count()
+
+        # Calculate the number of free seats
+        total_seats = obj.direction.bus.count_of_seats
+        free_places = total_seats - occupied_seats
+
+        return free_places
+

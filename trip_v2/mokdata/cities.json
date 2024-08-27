@@ -1,0 +1,162 @@
+[
+    {
+        "model": "trip_v2.city",
+        "pk": 1,
+        "fields": {
+            "name": "Almaty",
+            "region": "Almaty Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 2,
+        "fields": {
+            "name": "Astana",
+            "region": "Akmola Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 3,
+        "fields": {
+            "name": "Shymkent",
+            "region": "Turkestan Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 4,
+        "fields": {
+            "name": "Aktau",
+            "region": "Mangystau Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 5,
+        "fields": {
+            "name": "Atyrau",
+            "region": "Atyrau Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 6,
+        "fields": {
+            "name": "Karaganda",
+            "region": "Karaganda Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 7,
+        "fields": {
+            "name": "Pavlodar",
+            "region": "Pavlodar Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 8,
+        "fields": {
+            "name": "Ust-Kamenogorsk",
+            "region": "East Kazakhstan Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 9,
+        "fields": {
+            "name": "Kostanay",
+            "region": "Kostanay Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 10,
+        "fields": {
+            "name": "Petropavl",
+            "region": "North Kazakhstan Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 11,
+        "fields": {
+            "name": "Taraz",
+            "region": "Jambyl Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 12,
+        "fields": {
+            "name": "Temirtau",
+            "region": "Karaganda Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 13,
+        "fields": {
+            "name": "Zhanaozen",
+            "region": "Mangystau Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 14,
+        "fields": {
+            "name": "Kokshetau",
+            "region": "Akmola Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 15,
+        "fields": {
+            "name": "Kentau",
+            "region": "Turkestan Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 16,
+        "fields": {
+            "name": "Balqash",
+            "region": "Karaganda Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 17,
+        "fields": {
+            "name": "Saryagash",
+            "region": "Turkestan Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 18,
+        "fields": {
+            "name": "Taldykorgan",
+            "region": "Almaty Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 19,
+        "fields": {
+            "name": "Zhetisu",
+            "region": "Almaty Region"
+        }
+    },
+    {
+        "model": "trip_v2.city",
+        "pk": 20,
+        "fields": {
+            "name": "Aksu",
+            "region": "Pavlodar Region"
+        }
+    }
+]

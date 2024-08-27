@@ -1,11 +1,16 @@
 from rest_framework import serializers
-from .models import Route, Stop
+from .models import Route, Stop, City
+
 
 class StopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stop
         fields = ['id', 'name', 'travel_time_from_start', 'stop_time']
 
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['id', 'name', 'region']
 
 class RouteSerializer(serializers.ModelSerializer):
     stops = StopSerializer(many=True)

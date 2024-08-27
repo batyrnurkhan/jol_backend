@@ -1,11 +1,29 @@
 from rest_framework import serializers
+
+from books.serializers import BusFacilitiesSerializer
 from .models import Trip
 from datetime import date
 
 class TripSerializer(serializers.ModelSerializer):
+    from_city = serializers.CharField(source='route.start_city')
+    to_city = serializers.CharField(source='route.end_city')
+    route = serializers.SerializerMethodField()
+    bus = BusFacilitiesSerializer()
+
     class Meta:
         model = Trip
-        fields = '__all__'
+        fields = [
+            'id', 'departure_time', 'start_date', 'end_date', 'ticket_price',
+            'frequency', 'weekdays', 'status', 'route', 'bus', 'driver',
+            'from_city', 'to_city'  # Include the city names in the output
+        ]
+
+    def get_route(self, obj):
+        return {
+            "start_city": obj.route.start_city.name,  # Use .name to get the city name
+            "end_city": obj.route.end_city.name,  # Use .name to get the city name
+            "total_travel_time": obj.route.total_travel_time
+        }
 
     def get_status(self, obj):
         today = date.today()

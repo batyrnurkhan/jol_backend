@@ -1,0 +1,122 @@
+[
+    {
+        "model": "trip_v2.stop",
+        "pk": 1,
+        "fields": {
+            "route": 1,
+            "name": "Kapshagay",
+            "travel_time_from_start": "01:00:00",
+            "stop_time": "00:10:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 2,
+        "fields": {
+            "route": 1,
+            "name": "Balkhash",
+            "travel_time_from_start": "03:00:00",
+            "stop_time": "00:20:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 3,
+        "fields": {
+            "route": 1,
+            "name": "Priozersk",
+            "travel_time_from_start": "05:00:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 4,
+        "fields": {
+            "route": 1,
+            "name": "Karaganda",
+            "travel_time_from_start": "06:30:00",
+            "stop_time": "00:30:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 5,
+        "fields": {
+            "route": 1,
+            "name": "Temirtau",
+            "travel_time_from_start": "07:30:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 6,
+        "fields": {
+            "route": 1,
+            "name": "Astana",
+            "travel_time_from_start": "08:00:00",
+            "stop_time": "00:00:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 7,
+        "fields": {
+            "route": 2,
+            "name": "Turkestan",
+            "travel_time_from_start": "01:30:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 8,
+        "fields": {
+            "route": 2,
+            "name": "Kyzylorda",
+            "travel_time_from_start": "04:00:00",
+            "stop_time": "00:20:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 9,
+        "fields": {
+            "route": 2,
+            "name": "Aral",
+            "travel_time_from_start": "06:00:00",
+            "stop_time": "00:10:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 10,
+        "fields": {
+            "route": 2,
+            "name": "Zhosaly",
+            "travel_time_from_start": "08:00:00",
+            "stop_time": "00:15:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 11,
+        "fields": {
+            "route": 2,
+            "name": "Zhanaozen",
+            "travel_time_from_start": "11:00:00",
+            "stop_time": "00:20:00"
+        }
+    },
+    {
+        "model": "trip_v2.stop",
+        "pk": 12,
+        "fields": {
+            "route": 2,
+            "name": "Aktau",
+            "travel_time_from_start": "12:00:00",
+            "stop_time": "00:00:00"
+        }
+    }
+]

@@ -318,5 +318,37 @@
             "is_recumbent": true,
             "floors": 2
         }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "901234",
+        "fields": {
+            "name": "Bus I",
+            "stamp": 1,
+            "model": 2,
+            "state_number": "556 YZA 09",
+            "VIN": "9HGCM82633A004360",
+            "count_of_seats": 42,
+            "have_toilet": false,
+            "have_wifi": true,
+            "is_recumbent": false,
+            "floors": 1
+        }
+    },
+    {
+        "model": "buses.bus",
+        "pk": "012345",
+        "fields": {
+            "name": "Bus J",
+            "stamp": 2,
+            "model": 4,
+            "state_number": "667 ZAB 10",
+            "VIN": "0HGCM82633A004361",
+            "count_of_seats": 55,
+            "have_toilet": true,
+            "have_wifi": false,
+            "is_recumbent": true,
+            "floors": 2
+        }
     }
 ]
