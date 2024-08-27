@@ -53,6 +53,12 @@ class PassengerSerializer(serializers.ModelSerializer):
         model = Passenger
         fields = ['id', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date']
 
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user if request and request.user.is_authenticated else None
+        validated_data['user'] = user
+        return super().create(validated_data)
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:

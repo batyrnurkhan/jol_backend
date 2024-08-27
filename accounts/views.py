@@ -249,7 +249,7 @@ class SupportView(APIView):
 
 class CreatePassenger(APIView):
     def post(self, request):
-        serializer = PassengerSerializer(data=request.data)
+        serializer = PassengerSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         passenger = serializer.save()
