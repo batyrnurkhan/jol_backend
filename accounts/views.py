@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from django.conf import settings
 
 from books.models import Ticket
+from trip.models import Trip
+from trip.serializers import TripSerializer
 from .models import Passenger
 from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
     UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
@@ -301,3 +303,9 @@ class MyPassengersView(APIView):
         passengers = Passenger.objects.filter(user=request.user)
         serializer = PassengerSerializer(passengers, many=True)
         return Response(serializer.data, status=200)
+
+
+class TripDetailView(generics.RetrieveAPIView):
+    queryset = Trip.objects.all()
+    serializer_class = TripSerializer
+    lookup_field = 'id'
