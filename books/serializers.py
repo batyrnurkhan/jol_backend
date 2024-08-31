@@ -182,11 +182,16 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 
     def get_passengers(self, obj):
         passengers = TicketPassenger.objects.filter(ticket=obj)
-        return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]
+        return [{
+            'place_num': p.place_num,
+            'place_floor': p.place_floor,
+            'passenger': p.passenger.full_name if p.passenger else "Unknown Passenger"
+        } for p in passengers]
 
     def get_direction(self, obj):
-        from trip.serializers import TripSerializer  # Import here to avoid circular import
+        from trip.serializers import TripSerializer
         return TripSerializer(obj.direction).data
+
 
 class StopSerializer(serializers.ModelSerializer):
     class Meta:
