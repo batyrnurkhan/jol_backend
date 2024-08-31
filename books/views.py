@@ -126,8 +126,8 @@ class CreateTicket(APIView):
 
 class DirectionListView(APIView):
     def get(self, request):
-        directions = Direction.objects.all()
-        serializer = DirectionSerializer(directions, many=True)
+        directions = Trip.objects.all()
+        serializer = Trip(directions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

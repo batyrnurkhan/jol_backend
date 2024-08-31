@@ -14,21 +14,6 @@ class BusFacilitiesSerializer(serializers.ModelSerializer):
         model = Bus
         fields = ['have_toilet', 'have_wifi', 'is_recumbent']
 
-class TripSerializer(serializers.ModelSerializer):
-    route = serializers.SerializerMethodField()
-    bus = BusFacilitiesSerializer()
-
-    class Meta:
-        model = Trip
-        fields = ['id', 'route', 'departure_time', 'start_date', 'end_date', 'ticket_price', 'bus', 'driver', 'frequency', 'weekdays', 'active']
-
-    def get_route(self, obj):
-        return {
-            "start_city": obj.route.start_city,
-            "end_city": obj.route.end_city,
-            "total_travel_time": obj.route.total_travel_time
-        }
-
 class TicketDirectionSerializer(serializers.ModelSerializer):
     from_point = serializers.SerializerMethodField()
     from_bus_station = serializers.SerializerMethodField()
@@ -184,20 +169,21 @@ class TicketSerializer(serializers.Serializer):
 
 class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
-    trip = TripSerializer()
+    direction = 'trip.serializers.TripSerializer'  # Use string reference
     passengers = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
-        fields = ['id', 'qr_code', 'trip', 'passengers']
+        fields = ['id', 'qr_code', 'direction', 'passengers']
 
     def get_qr_code(self, obj):
-        # Assuming you have a method to generate QR codes
         return f"http://example.com/qr/{obj.id}"
 
     def get_passengers(self, obj):
         passengers = TicketPassenger.objects.filter(ticket=obj)
         return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]
+
+
 class StopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stop

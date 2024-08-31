@@ -258,7 +258,6 @@ class CreatePassenger(APIView):
 
 class MyTicketsView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
         tickets = Ticket.objects.filter(user=request.user)
         serializer = MyTicketSerializer(tickets, many=True)
