@@ -167,9 +167,10 @@ class TicketSerializer(serializers.Serializer):
         fields = ["direction", "place_num", "place_floor", "tickets"]
 
 
+
 class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
-    direction = 'trip.serializers.TripSerializer'  # Use string reference
+    direction = serializers.SerializerMethodField()
     passengers = serializers.SerializerMethodField()
 
     class Meta:
@@ -183,6 +184,9 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         passengers = TicketPassenger.objects.filter(ticket=obj)
         return [{'place_num': p.place_num, 'place_floor': p.place_floor, 'passenger': p.passenger.full_name} for p in passengers]
 
+    def get_direction(self, obj):
+        from trip.serializers import TripSerializer  # Import here to avoid circular import
+        return TripSerializer(obj.direction).data
 
 class StopSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,40 +1,44 @@
 from rest_framework import serializers
 
 from books.serializers import BusFacilitiesSerializer
+from buses.serializers import BusDetailSerializer
 from .models import Trip
 from datetime import date
 
 class TripSerializer(serializers.ModelSerializer):
-    from_city = serializers.CharField(source='route.start_city')
-    to_city = serializers.CharField(source='route.end_city')
+    from_city = serializers.CharField(source='route.start_city.name')
+    to_city = serializers.CharField(source='route.end_city.name')
     route = serializers.SerializerMethodField()
-    bus = BusFacilitiesSerializer()
+    bus = BusDetailSerializer()  # Use the detailed serializer here
+    status_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Trip
         fields = [
             'id', 'departure_time', 'start_date', 'end_date', 'ticket_price',
             'frequency', 'weekdays', 'status', 'route', 'bus', 'driver',
-            'from_city', 'to_city'  # Include the city names in the output
+            'from_city', 'to_city', 'status_description'
         ]
 
     def get_route(self, obj):
         return {
-            "start_city": obj.route.start_city.name,  # Use .name to get the city name
-            "end_city": obj.route.end_city.name,  # Use .name to get the city name
+            "start_city": obj.route.start_city.name,
+            "end_city": obj.route.end_city.name,
             "total_travel_time": obj.route.total_travel_time
         }
 
-    def get_status(self, obj):
+    def get_status_description(self, obj):
         today = date.today()
 
-        if not obj.active:
-            return "Flight cancelled" if obj.end_date < today else "The flight is not on sale"
-
-        if obj.start_date <= today <= obj.end_date:
+        if obj.status == 'cancelled':
+            return "Flight cancelled"
+        elif obj.status == 'not_on_sale':
+            return "The flight is not on sale"
+        elif obj.status == 'active' and obj.start_date <= today <= obj.end_date:
             return "The flight is active, sales are underway"
-
-        if today < obj.start_date:
+        elif obj.status == 'scheduled':
             return f"Flight scheduled from {obj.start_date} to {obj.end_date}"
-
-        return "Flight completed"
+        elif today > obj.end_date:
+            return "Flight completed"
+        else:
+            return "Unknown status"
