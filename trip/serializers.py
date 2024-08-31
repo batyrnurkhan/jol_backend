@@ -1,14 +1,13 @@
 from rest_framework import serializers
-
-from books.serializers import BusFacilitiesSerializer
 from buses.serializers import BusDetailSerializer
-from .models import Trip
+from .models import Trip, Bus, Route
 from datetime import date
 
+
 class TripSerializer(serializers.ModelSerializer):
-    from_city = serializers.CharField(source='route.start_city.name')
-    to_city = serializers.CharField(source='route.end_city.name')
-    route = serializers.SerializerMethodField()
+    from_city = serializers.CharField(source='route.start_city.name', read_only=True)
+    to_city = serializers.CharField(source='route.end_city.name', read_only=True)
+    route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
     bus = BusDetailSerializer()  # Use the detailed serializer here
     status_description = serializers.SerializerMethodField()
 
@@ -42,3 +41,12 @@ class TripSerializer(serializers.ModelSerializer):
             return "Flight completed"
         else:
             return "Unknown status"
+
+    def create(self, validated_data):
+        bus_data = validated_data.pop('bus')
+        bus = Bus.objects.create(**bus_data)
+
+        route = validated_data.pop('route')  # Get the route object
+
+        trip = Trip.objects.create(bus=bus, route=route, **validated_data)
+        return trip

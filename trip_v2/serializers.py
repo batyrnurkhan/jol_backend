@@ -1,16 +1,34 @@
 from rest_framework import serializers
 from .models import Route, Stop, City
 
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['id', 'name', 'region']
+
+    def create(self, validated_data):
+        return City.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.region = validated_data.get('region', instance.region)
+        instance.save()
+        return instance
 
 class StopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stop
         fields = ['id', 'name', 'travel_time_from_start', 'stop_time']
 
-class CitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = City
-        fields = ['id', 'name', 'region']
+    def create(self, validated_data):
+        return Stop.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.travel_time_from_start = validated_data.get('travel_time_from_start', instance.travel_time_from_start)
+        instance.stop_time = validated_data.get('stop_time', instance.stop_time)
+        instance.save()
+        return instance
 
 class RouteSerializer(serializers.ModelSerializer):
     stops = StopSerializer(many=True)
