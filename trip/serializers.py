@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from buses.serializers import BusDetailSerializer, DriverListSerializer
+from trip_v2.serializers import RouteSerializer
 from .models import Trip, Bus, Route
 from datetime import date
 
@@ -7,7 +8,7 @@ from datetime import date
 class TripSerializer(serializers.ModelSerializer):
     from_city = serializers.CharField(source='route.start_city.name', read_only=True)
     to_city = serializers.CharField(source='route.end_city.name', read_only=True)
-    route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
+    route = RouteSerializer(read_only=True)  # Use the detailed RouteSerializer
     bus = BusDetailSerializer()  # Use the detailed serializer here
     driver = DriverListSerializer()  # Include driver details here
     status_description = serializers.SerializerMethodField()
@@ -19,13 +20,6 @@ class TripSerializer(serializers.ModelSerializer):
             'frequency', 'weekdays', 'status', 'route', 'bus', 'driver',
             'from_city', 'to_city', 'status_description'
         ]
-
-    def get_route(self, obj):
-        return {
-            "start_city": obj.route.start_city.name,
-            "end_city": obj.route.end_city.name,
-            "total_travel_time": obj.route.total_travel_time
-        }
 
     def get_status_description(self, obj):
         today = date.today()
