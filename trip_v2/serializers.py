@@ -31,7 +31,9 @@ class StopSerializer(serializers.ModelSerializer):
         return instance
 
 class RouteSerializer(serializers.ModelSerializer):
-    stops = StopSerializer(many=True)
+    start_city = CitySerializer(read_only=True)  # Include full start city details
+    end_city = CitySerializer(read_only=True)  # Include full end city details
+    stops = StopSerializer(many=True, read_only=True)
 
     class Meta:
         model = Route
