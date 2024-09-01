@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from buses.serializers import BusDetailSerializer
+from buses.serializers import BusDetailSerializer, DriverListSerializer
 from .models import Trip, Bus, Route
 from datetime import date
 
