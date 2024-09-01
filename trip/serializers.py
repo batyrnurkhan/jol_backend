@@ -9,6 +9,7 @@ class TripSerializer(serializers.ModelSerializer):
     to_city = serializers.CharField(source='route.end_city.name', read_only=True)
     route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
     bus = BusDetailSerializer()  # Use the detailed serializer here
+    driver = DriverListSerializer()  # Include driver details here
     status_description = serializers.SerializerMethodField()
 
     class Meta:
