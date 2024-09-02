@@ -1,5 +1,5 @@
+import logging
 import datetime
-
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -8,11 +8,15 @@ from books.models import Ticket, TicketPassenger
 from buses.models import Bus
 from trip.models import Trip
 
+# Initialize logger for books app
+logger = logging.getLogger('books')
+
 
 class BusFacilitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bus
         fields = ['have_toilet', 'have_wifi', 'is_recumbent']
+
 
 class TicketDirectionSerializer(serializers.ModelSerializer):
     from_point = serializers.SerializerMethodField()
@@ -26,67 +30,81 @@ class TicketDirectionSerializer(serializers.ModelSerializer):
     bus = BusFacilitiesSerializer()
     price = serializers.SerializerMethodField()
     free_places_count = serializers.SerializerMethodField()
-    taxi_park = serializers.SerializerMethodField()  # Add as a method field
+    taxi_park = serializers.SerializerMethodField()
 
     class Meta:
         model = Trip
         fields = [
             'id', 'from_point', 'from_bus_station', 'from_date', 'from_time',
             'to_point', 'to_bus_station', 'to_date', 'to_time', 'price',
-            'free_places_count', 'bus', 'taxi_park'  # Include the taxi_park field here
+            'free_places_count', 'bus', 'taxi_park'
         ]
 
     def get_from_point(self, obj):
-        return {"id": obj.route.start_city.id, "name": obj.route.start_city.name}
+        point = {"id": obj.route.start_city.id, "name": obj.route.start_city.name}
+        logger.debug(f"Getting from_point: {point}")
+        return point
 
     def get_to_point(self, obj):
-        return {"id": obj.route.end_city.id, "name": obj.route.end_city.name}
+        point = {"id": obj.route.end_city.id, "name": obj.route.end_city.name}
+        logger.debug(f"Getting to_point: {point}")
+        return point
 
     def get_from_bus_station(self, obj):
         first_stop = obj.route.stops.first()
-        return {
+        bus_station = {
             "id": first_stop.id if first_stop else None,
             "name": first_stop.name if first_stop else None
         }
+        logger.debug(f"Getting from_bus_station: {bus_station}")
+        return bus_station
 
     def get_to_bus_station(self, obj):
         last_stop = obj.route.stops.last()
-        return {
+        bus_station = {
             "id": last_stop.id if last_stop else None,
             "name": last_stop.name if last_stop else None
         }
+        logger.debug(f"Getting to_bus_station: {bus_station}")
+        return bus_station
 
     def get_from_date(self, obj):
-        return obj.start_date.strftime('%Y-%m-%d')
+        date = obj.start_date.strftime('%Y-%m-%d')
+        logger.debug(f"Getting from_date: {date}")
+        return date
 
     def get_from_time(self, obj):
-        return obj.departure_time.strftime('%H:%M')
+        time = obj.departure_time.strftime('%H:%M')
+        logger.debug(f"Getting from_time: {time}")
+        return time
 
     def get_to_date(self, obj):
-        return obj.end_date.strftime('%Y-%m-%d')
+        date = obj.end_date.strftime('%Y-%m-%d')
+        logger.debug(f"Getting to_date: {date}")
+        return date
 
     def get_to_time(self, obj):
-        return obj.departure_time.strftime('%H:%M')  # Adjust as needed
+        time = obj.departure_time.strftime('%H:%M')
+        logger.debug(f"Getting to_time: {time}")
+        return time
 
     def get_price(self, obj):
-        return str(obj.ticket_price)
+        price = str(obj.ticket_price)
+        logger.debug(f"Getting price: {price}")
+        return price
 
     def get_free_places_count(self, obj):
-        # Get all tickets associated with the current trip
         tickets = Ticket.objects.filter(direction=obj)
-
-        # Count all passengers associated with these tickets
         occupied_seats = TicketPassenger.objects.filter(ticket__in=tickets).count()
-
-        # Calculate the number of free seats
         total_seats = obj.bus.count_of_seats
         free_places = total_seats - occupied_seats
-
+        logger.debug(f"Calculating free_places_count: {free_places}")
         return free_places
 
     def get_taxi_park(self, obj):
-        return "Таксопарк “ТОО ЖОЛЫМБЕТ ПЕРЕВОЗКИ”"
-
+        taxi_park = "Таксопарк “ТОО ЖОЛЫМБЕТ ПЕРЕВОЗКИ”"
+        logger.debug(f"Getting taxi_park: {taxi_park}")
+        return taxi_park
 
 
 class PassengerTicketSerializer(serializers.ModelSerializer):
@@ -104,22 +122,26 @@ class TicketSerializer(serializers.Serializer):
     def create(self, validated_data):
         try:
             with transaction.atomic():
-                # Fetch the Trip instance using the direction (Trip) ID
                 trip = Trip.objects.get(id=validated_data["direction"])
+                logger.debug(f"Creating ticket for trip ID: {trip.id}")
+
                 place_num = validated_data.get("place_num")
                 place_floor = validated_data.get("place_floor")
                 tickets_data = validated_data.get("tickets", [])
 
                 ticket = Ticket()
-                ticket.direction = trip  # Correctly link the ticket to the Trip instance
+                ticket.direction = trip
                 ticket.user = self.context["request"].user if self.context["request"].user.is_authenticated else None
                 ticket.status = "Booked"
                 ticket.save()
+                logger.info(f"Ticket created with ID: {ticket.id} for user: {ticket.user}")
 
                 reserved_places = []
 
                 if place_num and place_floor:
-                    if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num, place_floor=place_floor).exists():
+                    if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num,
+                                                      place_floor=place_floor).exists():
+                        logger.error(f"ValidationError: Place {place_num} on floor {place_floor} is already taken.")
                         raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
                     TicketPassenger.objects.create(
@@ -132,13 +154,17 @@ class TicketSerializer(serializers.Serializer):
                         "place_num": place_num,
                         "place_floor": place_floor
                     })
+                    logger.info(f"Place reserved: {place_num}, Floor: {place_floor} for ticket ID: {ticket.id}")
+
                 elif tickets_data:
                     for ticket_data in tickets_data:
                         passenger = ticket_data.get("passenger")
                         place_num = ticket_data["place_num"]
                         place_floor = ticket_data["place_floor"]
 
-                        if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num, place_floor=place_floor).exists():
+                        if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num,
+                                                          place_floor=place_floor).exists():
+                            logger.error(f"ValidationError: Place {place_num} on floor {place_floor} is already taken.")
                             raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
                         TicketPassenger.objects.create(
@@ -151,21 +177,27 @@ class TicketSerializer(serializers.Serializer):
                             "place_num": place_num,
                             "place_floor": place_floor
                         })
+                        logger.info(
+                            f"Passenger place reserved: {place_num}, Floor: {place_floor} for ticket ID: {ticket.id}")
+
                 else:
+                    logger.error("ValidationError: Either place_num and place_floor or tickets must be provided.")
                     raise ValidationError("Either place_num and place_floor or tickets must be provided.")
 
                 return ticket, reserved_places
 
         except Trip.DoesNotExist:
+            logger.error("ValidationError: Trip does not exist")
             raise ValidationError("Trip does not exist")
         except ValidationError as e:
+            logger.error(f"ValidationError during ticket creation: {str(e)}")
             raise e
         except Exception as e:
+            logger.error(f"Exception during ticket creation: {str(e)}")
             raise ValidationError(str(e))
 
     class Meta:
         fields = ["direction", "place_num", "place_floor", "tickets"]
-
 
 
 class TicketDetailSerializer(serializers.ModelSerializer):
@@ -178,19 +210,25 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'qr_code', 'direction', 'passengers']
 
     def get_qr_code(self, obj):
-        return f"http://example.com/qr/{obj.id}"
+        qr_code_url = f"http://example.com/qr/{obj.id}"
+        logger.debug(f"Getting QR code URL: {qr_code_url}")
+        return qr_code_url
 
     def get_passengers(self, obj):
         passengers = TicketPassenger.objects.filter(ticket=obj)
-        return [{
+        passenger_list = [{
             'place_num': p.place_num,
             'place_floor': p.place_floor,
             'passenger': p.passenger.full_name if p.passenger else "Unknown Passenger"
         } for p in passengers]
+        logger.debug(f"Getting passengers for ticket ID: {obj.id} - {passenger_list}")
+        return passenger_list
 
     def get_direction(self, obj):
         from trip.serializers import TripSerializer
-        return TripSerializer(obj.direction).data
+        direction_data = TripSerializer(obj.direction).data
+        logger.debug(f"Getting direction for ticket ID: {obj.id} - {direction_data}")
+        return direction_data
 
 
 class StopSerializer(serializers.ModelSerializer):

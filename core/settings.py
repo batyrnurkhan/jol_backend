@@ -146,3 +146,100 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+import os
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'drf_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'drf_logs.log'),
+            'formatter': 'verbose',
+        },
+        'accounts_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'accounts_logs.log'),
+            'formatter': 'verbose',
+        },
+        'books_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'books_logs.log'),
+            'formatter': 'verbose',
+        },
+        'buses_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'buses_logs.log'),
+            'formatter': 'verbose',
+        },
+        'trip_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'trip_logs.log'),
+            'formatter': 'verbose',
+        },
+        'trip_v2_file': {  # New handler for trip_v2 app logs
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'trip_v2_logs.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'accounts': {
+            'handlers': ['accounts_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'books': {
+            'handlers': ['books_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'buses': {
+            'handlers': ['buses_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'trip': {
+            'handlers': ['trip_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'trip_v2': {  # New logger for trip_v2 app
+            'handlers': ['trip_v2_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

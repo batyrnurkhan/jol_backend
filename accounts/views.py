@@ -13,15 +13,18 @@ from books.models import Ticket
 from trip.models import Trip
 from trip.serializers import TripSerializer
 from .models import Passenger
-from .serializers import PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer, LoginSerializer, \
-    UserProfileSerializer, PassengerSerializer, UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
+from .serializers import (
+    PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer,
+    LoginSerializer, UserProfileSerializer, PassengerSerializer,
+    UserProfileBasicSerializer, MyTicketSerializer, SetPasswordSerializer
+)
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 import requests
 import random
 from .sms_service import SMSCService
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('accounts')
 
 CustomUser = get_user_model()
 
@@ -32,26 +35,26 @@ class PhoneNumberView(APIView):
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            phone_number = phone_number.replace('+', '')  # Уберите плюс, если это необходимо
+            phone_number = phone_number.replace('+', '')  # Remove plus if necessary
 
-            verification_code = random.randint(1000, 9999)  # Генерация случайного кода
+            verification_code = random.randint(1000, 9999)  # Generate random code
 
-            # Отправка SMS через smsc.kz
+            # Send SMS via smsc.kz
             sms_service = SMSCService(settings.SMSC_LOGIN, settings.SMSC_PASSWORD)
             try:
-                # Передаем `sender` в метод send_sms
+                # Pass `sender` to send_sms method
                 sms_service.send_sms(phone_number, str(verification_code), sender='Joool')
+                logger.info(f"SMS sent to {phone_number} with code {verification_code}")
             except Exception as e:
                 logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
 
-            # Сохраняем код в кэше
-            cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
+            # Save code in cache
+            cache.set(phone_number, str(verification_code), timeout=300)  # Store code in cache for 5 minutes
             logger.info(f"Verification code {verification_code} set for {phone_number}")
             return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
 
         logger.error("Invalid data: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class VerifyCodeView(APIView):
@@ -73,13 +76,15 @@ class VerifyCodeView(APIView):
                 # Generate or get the token for this user
                 token, created = Token.objects.get_or_create(user=user)
 
-                # Return the token and user_id to the client
-                return Response({"message": "Phone number verified", "token": token.key, "user_id": user.id}, status=status.HTTP_200_OK)
+                logger.info(f"Phone number {phone_number} verified. User: {user.id}, Token: {token.key}")
+                return Response({"message": "Phone number verified", "token": token.key, "user_id": user.id},
+                                status=status.HTTP_200_OK)
 
+            logger.error(f"Invalid code for phone number {phone_number}")
             return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
+        logger.error("Invalid data in code verification: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class SetPasswordView(APIView):
@@ -91,7 +96,9 @@ class SetPasswordView(APIView):
             user = request.user
             user.set_password(serializer.validated_data['password1'])
             user.save()
+            logger.info(f"Password set successfully for user: {user.phone_number}")
             return Response({"message": "Password set successfully"}, status=status.HTTP_200_OK)
+        logger.error("Password set failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -99,22 +106,22 @@ class CompleteProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id=None):
-        # Ensure the user is trying to update their own profile
         if request.user.id != user_id:
-            return Response({"error": "You are not authorized to update this profile."}, status=status.HTTP_403_FORBIDDEN)
+            logger.warning(f"Unauthorized profile update attempt by user: {request.user.id}")
+            return Response({"error": "You are not authorized to update this profile."},
+                            status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
+            logger.error(f"User not found: {user_id}")
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = CompleteProfileSerializer(instance=user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
 
-            # Check if a Passenger entry already exists for this user
             if not Passenger.objects.filter(user=user).exists():
-                # Create a new Passenger instance
                 Passenger.objects.create(
                     user=user,
                     full_name=serializer.validated_data.get('full_name', ''),
@@ -122,8 +129,11 @@ class CompleteProfileView(APIView):
                     document_number_or_iin=serializer.validated_data.get('document_number_or_iin', ''),
                     birth_date=serializer.validated_data.get('birth_date', None)
                 )
+                logger.info(f"Passenger created for user: {user.id}")
 
-            return Response({"message": "Profile updated successfully, and passenger created."}, status=status.HTTP_200_OK)
+            return Response({"message": "Profile updated successfully, and passenger created."},
+                            status=status.HTTP_200_OK)
+        logger.error("Profile update failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -133,6 +143,7 @@ class UserProfileByTokenView(APIView):
     def get(self, request):
         user = request.user
         serializer = UserProfileSerializer(user)
+        logger.info(f"User profile retrieved by token: {user.id}")
         return Response({
             "id": user.id,
             "profile": serializer.data
@@ -154,9 +165,10 @@ class LoginView(APIView):
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
+            logger.info(f"User logged in: {user.id}, Token: {token.key}")
             return Response({'token': token.key}, status=status.HTTP_200_OK)
+        logger.error("Invalid login attempt with data: %s", request.data)
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class UserProfileBasicView(APIView):
@@ -164,6 +176,7 @@ class UserProfileBasicView(APIView):
 
     def get(self, request):
         serializer = UserProfileBasicSerializer(request.user)
+        logger.info(f"Basic user profile retrieved: {request.user.id}")
         return Response(serializer.data)
 
 
@@ -173,6 +186,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        logger.info(f"User profile object retrieved for update: {self.request.user.id}")
         return self.request.user
 
 
@@ -182,6 +196,7 @@ class UpdatePersonalInfoView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        logger.info(f"User personal info retrieved for update: {self.request.user.id}")
         return self.request.user
 
 
@@ -191,6 +206,7 @@ class PassengerInfoView(APIView):
     def get(self, request):
         passengers = Passenger.objects.filter(user=request.user)
         serializer = PassengerSerializer(passengers, many=True)
+        logger.info(f"Passenger info retrieved for user: {request.user.id}")
         return Response(serializer.data)
 
 
@@ -200,6 +216,7 @@ class IndividualPassengerView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        logger.info(f"Individual passenger data retrieved for user: {self.request.user.id}")
         return self.queryset.filter(user=self.request.user)
 
 
@@ -212,6 +229,7 @@ class DeletePassengerView(DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
+        logger.info(f"Deleting passenger: {instance.id} for user: {request.user.id}")
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -224,6 +242,7 @@ class SecurityView(APIView):
             'data_protection_policy': 'Your data is protected...',
             'last_security_update': '2024-07-01'
         }
+        logger.info(f"Security info retrieved for user: {request.user.id}")
         return Response(security_info)
 
 
@@ -235,6 +254,7 @@ class FAQView(APIView):
             {'question': 'How to change my password?', 'answer': 'Go to settings...'},
             {'question': 'How to delete my account?', 'answer': 'Contact support...'}
         ]
+        logger.info(f"FAQ info retrieved for user: {request.user.id}")
         return Response(faq_info)
 
 
@@ -246,6 +266,7 @@ class SupportView(APIView):
             'support_email': 'support@example.com',
             'support_phone': '+1234567890'
         }
+        logger.info(f"Support info retrieved for user: {request.user.id}")
         return Response(support_info)
 
 
@@ -253,16 +274,20 @@ class CreatePassenger(APIView):
     def post(self, request):
         serializer = PassengerSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
+            logger.error("Failed to create passenger: %s", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         passenger = serializer.save()
+        logger.info(f"Passenger created: {passenger.id} for user: {request.user.id}")
         return Response(passenger.id, status=status.HTTP_201_CREATED)
 
 
 class MyTicketsView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         tickets = Ticket.objects.filter(user=request.user)
         serializer = MyTicketSerializer(tickets, many=True)
+        logger.info(f"My tickets retrieved for user: {request.user.id}")
         return Response(serializer.data, status=200)
 
 
@@ -271,12 +296,12 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            # Get the token associated with the request user
             token = Token.objects.get(user=request.user)
-            # Delete the token, effectively logging out the user
             token.delete()
+            logger.info(f"User logged out: {request.user.id}")
             return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
         except Token.DoesNotExist:
+            logger.error("Logout failed: Token not found for user: %s", request.user.id)
             return Response({"error": "Token not found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -290,8 +315,11 @@ class StaffLoginView(APIView):
 
             if user:
                 token, created = Token.objects.get_or_create(user=user)
+                logger.info(f"Staff user logged in: {user.id}, Token: {token.key}")
                 return Response({'token': token.key}, status=status.HTTP_200_OK)
+            logger.error("Invalid staff login attempt with data: %s", request.data)
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        logger.error("Staff login failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -299,9 +327,9 @@ class MyPassengersView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Get the passengers associated with the logged-in user
         passengers = Passenger.objects.filter(user=request.user)
         serializer = PassengerSerializer(passengers, many=True)
+        logger.info(f"My passengers retrieved for user: {request.user.id}")
         return Response(serializer.data, status=200)
 
 
@@ -309,3 +337,8 @@ class TripDetailView(generics.RetrieveAPIView):
     queryset = Trip.objects.all()
     serializer_class = TripSerializer
     lookup_field = 'id'
+
+    def get_object(self):
+        obj = super().get_object()
+        logger.info(f"Trip details retrieved for trip: {obj.id}")
+        return obj
