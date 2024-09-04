@@ -31,7 +31,6 @@ class Model(models.Model):
         return f"{self.name}"
 
 class Bus(models.Model):
-    id = models.CharField(max_length=6, primary_key=True, default=generate_bus_id, editable=False, unique=True)
     name = models.CharField(max_length=255)
     stamp = models.ForeignKey('Stamp', on_delete=models.SET_NULL, null=True, related_name='buses')
     model = models.ForeignKey('Model', on_delete=models.SET_NULL, null=True, related_name='buses')
