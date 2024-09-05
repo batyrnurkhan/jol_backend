@@ -3,7 +3,6 @@ from rest_framework import viewsets
 from .models import City, Stop, Route
 from .serializers import CitySerializer, StopSerializer, RouteSerializer
 
-# Initialize logger for trip_v2 app
 logger = logging.getLogger('trip_v2')
 
 class CityViewSet(viewsets.ModelViewSet):

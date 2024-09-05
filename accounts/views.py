@@ -11,7 +11,7 @@ from django.conf import settings
 
 from books.models import Ticket
 from trip.models import Trip
-from trip.serializers import TripDetailSerializer
+from trip.serializers import TripSerializer
 from .models import Passenger
 from .serializers import (
     PhoneNumberSerializer, VerificationCodeSerializer, CompleteProfileSerializer,
@@ -335,7 +335,7 @@ class MyPassengersView(APIView):
 
 class TripDetailView(generics.RetrieveAPIView):
     queryset = Trip.objects.all()
-    serializer_class = TripDetailSerializer
+    serializer_class = TripSerializer
     lookup_field = 'id'
 
     def get_object(self):

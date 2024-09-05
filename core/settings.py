@@ -17,6 +17,7 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = ["*"]
 
 SMSC_LOGIN = 'joool'
+
 SMSC_PASSWORD = 'Joool2024'
 
 DOWNLOAD_APPS = [
@@ -58,9 +59,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'core.urls'
 
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.UsernameBackend',  # for Bus station staff
-    'accounts.backends.PhoneNumberBackend',  # for regular users
-    'django.contrib.auth.backends.ModelBackend',  # default backend
+    'accounts.backends.UsernameBackend',
+    'accounts.backends.PhoneNumberBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 TEMPLATES = [
@@ -193,7 +194,7 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'trip_logs.log'),
             'formatter': 'verbose',
         },
-        'trip_v2_file': {  # New handler for trip_v2 app logs
+        'trip_v2_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'trip_v2_logs.log'),
@@ -236,7 +237,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'trip_v2': {  # New logger for trip_v2 app
+        'trip_v2': {
             'handlers': ['trip_v2_file'],
             'level': 'DEBUG',
             'propagate': True,

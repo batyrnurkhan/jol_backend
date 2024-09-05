@@ -31,6 +31,7 @@ class Model(models.Model):
         return f"{self.name}"
 
 class Bus(models.Model):
+    id = models.CharField(max_length=6, primary_key=True, default=generate_bus_id, editable=False, unique=True)
     name = models.CharField(max_length=255)
     stamp = models.ForeignKey('Stamp', on_delete=models.SET_NULL, null=True, related_name='buses')
     model = models.ForeignKey('Model', on_delete=models.SET_NULL, null=True, related_name='buses')
@@ -42,7 +43,6 @@ class Bus(models.Model):
     is_recumbent = models.BooleanField(default=False)
     scheme = models.FileField(upload_to=bus_scheme_upload_to, null=True, blank=True)
     floors = models.PositiveIntegerField(choices=[(1, 'One'), (2, 'Two')], default=1)
-
     def __str__(self):
         bus_info = f"Bus {self.name} ({self.id})"
         logger.debug(f"String representation of Bus called: {bus_info}")

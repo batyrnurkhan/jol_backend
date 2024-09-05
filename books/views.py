@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from trip.models import Trip
-from trip.serializers import TripDetailSerializer
+from trip.serializers import TripSerializer
 from trip_v2.models import Route, Stop
 from books.models import Ticket, TicketPassenger
 from books.serializers import TicketDirectionSerializer, TicketSerializer, TicketDetailSerializer
@@ -132,7 +132,7 @@ class CreateTicket(APIView):
 class DirectionListView(APIView):
     def get(self, request):
         directions = Trip.objects.all()
-        serializer = TripDetailSerializer(directions, many=True)
+        serializer = TripSerializer(directions, many=True)
         logger.info(f"Retrieved list of directions. Count: {len(directions)}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
