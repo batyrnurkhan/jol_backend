@@ -11,18 +11,26 @@ from datetime import date
 logger = logging.getLogger('trip')
 
 
-class TripSerializer(serializers.ModelSerializer):
-    route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
-    bus = serializers.PrimaryKeyRelatedField(queryset=Bus.objects.all())
-    driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all())
-    weekdays = serializers.ListField(child=serializers.CharField(), allow_empty=False)  # List of weekdays
-    frequency = serializers.CharField(max_length=255)  # Frequency as a string
-
+class TripCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trip
         fields = [
             'id', 'departure_time', 'start_date', 'end_date', 'ticket_price',
             'frequency', 'weekdays', 'status', 'route', 'bus', 'driver'
+        ]
+
+
+class TripDetailSerializer(serializers.ModelSerializer):
+    from_city = serializers.CharField(source='route.start_city.name', read_only=True)
+    to_city = serializers.CharField(source='route.end_city.name', read_only=True)
+    status_description = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Trip
+        fields = [
+            'id', 'departure_time', 'start_date', 'end_date', 'ticket_price',
+            'frequency', 'weekdays', 'status', 'route', 'bus', 'driver',
+            'from_city', 'to_city', 'status_description'
         ]
 
     def get_status_description(self, obj):
@@ -41,14 +49,4 @@ class TripSerializer(serializers.ModelSerializer):
         else:
             description = "Unknown status"
 
-        logger.debug(f"Status description for Trip ID {obj.id}: {description}")
         return description
-
-    def create(self, validated_data):
-        route = validated_data.pop('route')
-        bus = validated_data.pop('bus')
-        driver = validated_data.pop('driver')
-
-        # Create the Trip instance
-        trip = Trip.objects.create(route=route, bus=bus, driver=driver, **validated_data)
-        return trip
