@@ -35,21 +35,20 @@ class PhoneNumberView(APIView):
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            phone_number = phone_number.replace('+', '')  # Remove plus if necessary
+            phone_number = phone_number.replace('+', '')  # Убираем плюс, если это необходимо
 
-            verification_code = random.randint(1000, 9999)  # Generate random code
+            verification_code = random.randint(1000, 9999)  # Генерация случайного кода
 
-            # Send SMS via smsc.kz
-            sms_service = SMSCService(settings.SMSC_LOGIN, settings.SMSC_PASSWORD)
+            # Отправка SMS через Mobizon API
+            sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
             try:
-                # Pass `sender` to send_sms method
-                sms_service.send_sms(phone_number, str(verification_code), sender='Joool')
-                logger.info(f"SMS sent to {phone_number} with code {verification_code}")
+                # Передаем `sender` в метод send_sms
+                sms_service.send_sms(phone_number,str("Code for Joool: " + str(verification_code)))
             except Exception as e:
                 logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
 
-            # Save code in cache
-            cache.set(phone_number, str(verification_code), timeout=300)  # Store code in cache for 5 minutes
+            # Сохраняем код в кэше
+            cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
             logger.info(f"Verification code {verification_code} set for {phone_number}")
             return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
 
