@@ -30,15 +30,15 @@ class PhoneNumberView(APIView):
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            phone_number = phone_number.replace('+', '')  # Уберите плюс, если это необходимо
+            phone_number = phone_number.replace('+', '')  # Убираем плюс, если это необходимо
 
             verification_code = random.randint(1000, 9999)  # Генерация случайного кода
 
-            # Отправка SMS через smsc.kz
-            sms_service = SMSCService(settings.SMSC_LOGIN, settings.SMSC_PASSWORD)
+            # Отправка SMS через Mobizon API
+            sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
             try:
                 # Передаем `sender` в метод send_sms
-                sms_service.send_sms(phone_number, str(verification_code), sender='Joool')
+                sms_service.send_sms(phone_number,str( "Code Joool: " +str(verification_code)))
             except Exception as e:
                 logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
 

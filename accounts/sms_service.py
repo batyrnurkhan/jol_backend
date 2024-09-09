@@ -1,44 +1,46 @@
 import requests
 import logging
+from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
+
 class SMSCService:
-    def __init__(self, login, password, sender_name='SMSC'):
-        self.login = login
-        self.password = password
-        self.sender_name = sender_name
-        self.base_url = 'https://smsc.kz/sys/send.php'
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = 'https://api.mobizon.kz/service/message/sendsmsmessage'
 
-    def send_sms(self, phone_number, message, sender=None):
-        payload = {
-            'login': self.login,
-            'psw': self.password,
-            'phones': phone_number,
-            'mes': message,
-            'fmt': 3,  # Ответ в формате JSON
-            'charset': 'utf-8'
-        }
+    def send_sms(self, phone_number, message):
+        # Кодируем сообщение
+        encoded_message = urlencode({'text': message})
 
-        # Добавляем параметр `sender`, если он был передан
-        if sender:
-            payload['sender'] = sender
+        # Формируем URL для отправки SMS с URL-кодированным текстом
+        url = f"{self.base_url}?recipient={phone_number}&{encoded_message}&apiKey=kz97942e67d631306b579416b07f19ce862d409385be6846ddeb8171f3f4f0c85d61e4"
+
+        # Логирование отправляемого URL
+        print(f"Sending request to URL: {url}")
 
         try:
-            response = requests.get(self.base_url, params=payload)
-            response_data = response.json()
+            # Отправляем GET запрос
+            response = requests.get(url)
 
-            # Логирование ответа
-            logger.error(f"Response status code: {response.status_code}")
-            logger.error(f"Response data: {response_data}")
+            # Логируем статус ответа и данные
+            logger.info(f"Response status code: {response.status_code}")
+            logger.info(f"Response text: {response.text}")
 
-            if response.status_code == 200 and 'error_code' not in response_data:
-                return True
+            # Проверяем успешность запроса
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data.get('code') == 0:
+                    return True  # SMS успешно отправлено
+                else:
+                    error_message = response_data.get('message', 'Unknown error')
+                    error_code = response_data.get('code', 'N/A')
+                    raise Exception(f"Failed to send SMS: {error_message} (Error code: {error_code})")
             else:
-                error_message = response_data.get('error', 'Unknown error')
-                error_code = response_data.get('error_code', 'N/A')
-                raise Exception(f"Failed to send SMS: {error_message} (Error code: {error_code})")
+                raise Exception(f"Failed to send SMS: HTTP {response.status_code}")
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Request to SMSC failed: {str(e)}")
+            # Логируем и пробрасываем ошибку в случае неудачи запроса
+            logger.error(f"Request to Mobizon failed: {str(e)}")
             raise Exception("Failed to send SMS: Unknown error")
