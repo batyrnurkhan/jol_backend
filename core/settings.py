@@ -20,6 +20,7 @@ MOBIZON_API_KEY = 'kz97942e67d631306b579416b07f19ce862d409385be6846ddeb8171f3f4f
 
 
 SMSC_LOGIN = 'joool'
+
 SMSC_PASSWORD = 'Joool2024'
 
 DOWNLOAD_APPS = [
@@ -61,9 +62,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'core.urls'
 
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.UsernameBackend',  # for Bus station staff
-    'accounts.backends.PhoneNumberBackend',  # for regular users
-    'django.contrib.auth.backends.ModelBackend',  # default backend
+    'accounts.backends.UsernameBackend',
+    'accounts.backends.PhoneNumberBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 TEMPLATES = [
@@ -148,4 +149,101 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+}
+
+import os
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'drf_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'drf_logs.log'),
+            'formatter': 'verbose',
+        },
+        'accounts_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'accounts_logs.log'),
+            'formatter': 'verbose',
+        },
+        'books_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'books_logs.log'),
+            'formatter': 'verbose',
+        },
+        'buses_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'buses_logs.log'),
+            'formatter': 'verbose',
+        },
+        'trip_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'trip_logs.log'),
+            'formatter': 'verbose',
+        },
+        'trip_v2_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'trip_v2_logs.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework': {
+            'handlers': ['drf_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'accounts': {
+            'handlers': ['accounts_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'books': {
+            'handlers': ['books_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'buses': {
+            'handlers': ['buses_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'trip': {
+            'handlers': ['trip_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'trip_v2': {
+            'handlers': ['trip_v2_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

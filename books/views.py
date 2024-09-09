@@ -1,3 +1,4 @@
+import logging
 import datetime
 import json
 
@@ -17,23 +18,25 @@ from books.models import Ticket, TicketPassenger
 from books.serializers import TicketDirectionSerializer, TicketSerializer, TicketDetailSerializer
 from buses.models import Bus
 
+# Initialize logger for books app
+logger = logging.getLogger('books')
 
-# Create your views here.
 class DirectionDates(APIView):
     def get(self, request):
         from_city_id = request.GET.get('from_point')
         to_city_id = request.GET.get('to_point')
 
         if not (from_city_id and to_city_id):
+            logger.error("Missing from_point or to_point in request parameters")
             return Response({"error": "Need from_point and to_point"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Assuming you have a mapping or a way to get city names from city IDs
         routes = Route.objects.filter(
-            start_city_id=from_city_id,  # Filter by city ID
-            end_city_id=to_city_id       # Filter by city ID
+            start_city_id=from_city_id,
+            end_city_id=to_city_id
         ).order_by('created_at')
 
         if not routes.exists():
+            logger.warning(f"No routes found between cities {from_city_id} and {to_city_id}")
             return Response({"message": "No routes found between the specified cities"}, status=status.HTTP_404_NOT_FOUND)
 
         tickets_data = []
@@ -43,6 +46,7 @@ class DirectionDates(APIView):
                 serializer = TicketDirectionSerializer(trip)
                 tickets_data.append(serializer.data)
 
+        logger.info(f"Found {len(tickets_data)} trips for route from {from_city_id} to {to_city_id}")
         return Response(tickets_data, status=status.HTTP_200_OK)
 
 class GetTicket(APIView):
@@ -53,15 +57,15 @@ class GetTicket(APIView):
         passenger_count = int(request.GET.get('passenger_count'))
 
         if not (from_city_id and to_city_id and date_str):
+            logger.error("Missing required parameters: from, to, and date")
             return Response({"error": "from, to, and date are required parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Parse the date string to a date object
         try:
             travel_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
+            logger.error(f"Invalid date format: {date_str}")
             return Response({"error": "Invalid date format. Expected YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Filter routes based on the cities
         routes = Route.objects.filter(
             start_city_id=from_city_id,
             end_city_id=to_city_id
@@ -71,30 +75,27 @@ class GetTicket(APIView):
         for route in routes:
             trips = Trip.objects.filter(
                 route=route,
-                start_date__lte=travel_date,  # Ensure the trip is scheduled on or before the travel date
-                end_date__gte=travel_date      # Ensure the trip is ongoing on or after the travel date
+                start_date__lte=travel_date,
+                end_date__gte=travel_date
             )
 
             for trip in trips:
-                if trip.bus.count_of_seats >= passenger_count:  # Ensure there are enough seats
+                if trip.bus.count_of_seats >= passenger_count:
                     available_trips.append(trip)
 
         if not available_trips:
-            return Response([], status=status.HTTP_200_OK)  # Return an empty list if no trips match
+            logger.info(f"No available trips found from {from_city_id} to {to_city_id} on {date_str}")
+            return Response([], status=status.HTTP_200_OK)
 
-        # Serialize the available trips
         serializer = TicketDirectionSerializer(available_trips, many=True)
+        logger.info(f"Found {len(available_trips)} available trips from {from_city_id} to {to_city_id} on {date_str}")
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class DirectionPlaces(APIView):
     def get(self, request):
         route_id = request.GET.get('direction_id')
 
-        # Fetch the Trip instances associated with this route_id
         trips = Trip.objects.filter(route_id=route_id)
-
-        # Now filter tickets by these trips
         tickets = Ticket.objects.filter(direction__in=trips).filter(Q(status="Payed") | Q(status="Booked"))
 
         ticket_places = TicketPassenger.objects.filter(ticket__in=tickets).values('place_num', 'place_floor')
@@ -102,8 +103,8 @@ class DirectionPlaces(APIView):
             "places_count": tickets.count(),
             "busy_tickets": list(ticket_places)
         }
+        logger.info(f"Retrieved places for route ID: {route_id}")
         return Response(tickets_list, status=status.HTTP_200_OK)
-
 
 class CreateTicket(APIView):
     def post(self, request):
@@ -111,9 +112,12 @@ class CreateTicket(APIView):
         if serializer.is_valid():
             try:
                 ticket, reserved_places = serializer.create(serializer.validated_data)
+                logger.info(f"Ticket created successfully with ID: {ticket.id}")
             except ValidationError as e:
+                logger.error(f"Validation error while creating ticket: {str(e)}")
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
+                logger.error(f"Error while creating ticket: {str(e)}")
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({
@@ -122,15 +126,15 @@ class CreateTicket(APIView):
                 "reserved_places": reserved_places
             }, status=status.HTTP_201_CREATED)
 
+        logger.error(f"Invalid data received for creating ticket: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class DirectionListView(APIView):
     def get(self, request):
         directions = Trip.objects.all()
-        serializer = TripSerializer(directions, many=True)  # Correctly using the serializer here
+        serializer = TripSerializer(directions, many=True)
+        logger.info(f"Retrieved list of directions. Count: {len(directions)}")
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class RetrievePaidTicket(APIView):
     def get(self, request, *args, **kwargs):
@@ -138,9 +142,12 @@ class RetrievePaidTicket(APIView):
             user = request.user
             ticket = Ticket.objects.filter(user=user, status="Payed").first()
             if not ticket:
+                logger.warning(f"No paid ticket found for user ID: {user.id}")
                 return Response({"detail": "No paid ticket found."}, status=status.HTTP_404_NOT_FOUND)
 
             serializer = TicketDetailSerializer(ticket)
+            logger.info(f"Retrieved paid ticket with ID: {ticket.id} for user ID: {user.id}")
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
+            logger.error(f"Error while retrieving paid ticket: {str(e)}")
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

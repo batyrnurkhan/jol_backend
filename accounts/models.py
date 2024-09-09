@@ -1,16 +1,19 @@
-# accounts/models.py
+import logging
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+logger = logging.getLogger('accounts')
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
         if not phone_number:
+            logger.error('The Phone Number must be set')
             raise ValueError(_('The Phone Number must be set'))
         user = self.model(phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        logger.info(f'User created with phone number: {phone_number}')
         return user
 
     def create_superuser(self, phone_number, password=None, **extra_fields):
@@ -18,10 +21,13 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
 
         if extra_fields.get('is_staff') is not True:
+            logger.error('Superuser must have is_staff=True.')
             raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
+            logger.error('Superuser must have is_superuser=True.')
             raise ValueError(_('Superuser must have is_superuser=True.'))
 
+        logger.info(f'Superuser created with phone number: {phone_number}')
         return self.create_user(phone_number, password, **extra_fields)
 
 
@@ -40,8 +46,8 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self):
+        logger.debug(f'String representation called for user: {self.phone_number}')
         return self.phone_number
-
 
 
 class Passenger(models.Model):
