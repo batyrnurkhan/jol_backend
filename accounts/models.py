@@ -40,8 +40,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_('электронная почта'), unique=True, blank=True, null=True)
     phone_number = models.CharField(_('номер телефона'), max_length=15, unique=True)
 
-    USERNAME_FIELD = 'phone_number'  # Primary identifier for regular users
-    REQUIRED_FIELDS = ['username']  # Make username required for staff
+    USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = ['username']
 
     objects = CustomUserManager()
 

@@ -35,19 +35,17 @@ class PhoneNumberView(APIView):
         serializer = PhoneNumberSerializer(data=request.data)
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
-            phone_number = phone_number.replace('+', '')  # Убираем плюс, если это необходимо
+            phone_number = phone_number.replace('+', '')
 
-            verification_code = random.randint(1000, 9999)  # Генерация случайного кода
+            verification_code = random.randint(1000, 9999)
 
             # Отправка SMS через Mobizon API
             sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
             try:
-                # Передаем `sender` в метод send_sms
                 sms_service.send_sms(phone_number,str("Code for Joool: " + str(verification_code)))
             except Exception as e:
                 logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
 
-            # Сохраняем код в кэше
             cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
             logger.info(f"Verification code {verification_code} set for {phone_number}")
             return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
