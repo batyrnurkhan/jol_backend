@@ -32,33 +32,30 @@ class TicketPassenger(models.Model):
     def save(self, *args, **kwargs):
         logger.debug(
             f"Attempting to save TicketPassenger: Ticket {self.ticket.id}, Passenger {self.passenger}, User {self.user}, Place {self.place_num}, Floor {self.place_floor}")
-
-        # Fetch TicketPassengers for the same trip only
-        tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction, ticket=self.ticket)
+        # Filter TicketPassengers by the exact same trip
+        tps = TicketPassenger.objects.filter(ticket=self.ticket)
 
         for tp in tps:
+            # Check if the exact place on the same floor is already taken
             if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                logger.error(
-                    f"ValidationError: This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
+                logger.error(f"ValidationError: Place {self.place_num} on floor {self.place_floor} is already taken.")
                 raise ValidationError(
-                    f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
+                    f"Place {self.place_num} on floor {self.place_floor} is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
 
         super().save(*args, **kwargs)
 
     def clean(self):
-        logger.debug(f"Cleaning data for TicketPassenger: Ticket {self.ticket.id}, Passenger {self.passenger}, User {self.user}, Place {self.place_num}, Floor {self.place_floor}")
-        tps = TicketPassenger.objects.filter(ticket__direction=self.ticket.direction)
-        for tp in tps:
-            if self.passenger and tp.passenger == self.passenger:
-                logger.error(f"ValidationError during clean: This passenger {self.passenger.full_name} already has place {tp.place_num}, {tp.place_floor} floor")
-                raise ValidationError(f"This passenger {self.passenger.full_name} already has place {tp.place_num}, {tp.place_floor} floor")
-            if self.user and tp.user == self.user:
-                logger.error(f"ValidationError during clean: This user already has place {tp.place_num}, {tp.place_floor} floor")
-                raise ValidationError(f"This user already has place {tp.place_num}, {tp.place_floor} floor")
-            if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                logger.error(f"ValidationError during clean: This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
-                raise ValidationError(f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
+        logger.debug(
+            f"Cleaning data for TicketPassenger: Ticket {self.ticket.id}, Place {self.place_num}, Floor {self.place_floor}")
+        tps = TicketPassenger.objects.filter(ticket=self.ticket)
 
+        for tp in tps:
+            # Same as in save, but for cleaning before saving
+            if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
+                logger.error(
+                    f"ValidationError during clean: Place {self.place_num} on {self.place_floor} floor is already taken.")
+                raise ValidationError(
+                    f"This place {self.place_num} on {self.place_floor} floor is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
     class Meta:
         unique_together = ['ticket', 'place_num', 'place_floor']
         logger.debug(f"Meta: Unique together constraint on ['ticket', 'place_num', 'place_floor']")
