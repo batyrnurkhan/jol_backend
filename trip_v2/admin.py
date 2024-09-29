@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Route, Stop
+from .models import Route, Stop, City
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
@@ -10,3 +10,5 @@ class RouteAdmin(admin.ModelAdmin):
 class StopAdmin(admin.ModelAdmin):
     list_display = ('route', 'name', 'travel_time_from_start', 'stop_time')
     search_fields = ('name',)
+
+admin.site.register(City)
