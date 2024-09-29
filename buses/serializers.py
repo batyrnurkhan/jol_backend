@@ -75,3 +75,7 @@ class BusDetailSerializer(serializers.ModelSerializer):
         logger.debug(f"Getting model_stamp for Bus ID {obj.id}: {model_stamp}")
         return model_stamp
 
+class SeatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seat
+        fields = ['seat_id', 'seat_col', 'seat_row', 'seat_type']

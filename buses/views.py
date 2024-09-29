@@ -1,7 +1,11 @@
 import logging
 from rest_framework import viewsets
+from rest_framework.views import APIView
+
+from trip.models import Trip
 from .models import Bus, Driver, Seat
-from .serializers import BusListSerializer, BusCreateSerializer, DriverListSerializer, DriverCreateUpdateSerializer
+from .serializers import BusListSerializer, BusCreateSerializer, DriverListSerializer, DriverCreateUpdateSerializer, \
+    SeatSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -75,3 +79,32 @@ class DriverViewSet(viewsets.ModelViewSet):
         driver_id = self.get_object().id
         logger.info(f"Deleting driver with ID: {driver_id}")
         return super().destroy(request, *args, **kwargs)
+
+
+class BusSeatView(APIView):
+    def post(self, request):
+        trip_id = request.data.get('trip_id')
+
+        if not trip_id:
+            return Response({"error": "Trip ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Retrieve the trip by ID
+            trip = Trip.objects.get(id=trip_id)
+        except Trip.DoesNotExist:
+            return Response({"error": "Trip not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the bus associated with the trip
+        bus = trip.bus
+
+        # Get the seats of the bus
+        seats = Seat.objects.filter(bus=bus)
+
+        # Serialize the seat data
+        seat_serializer = SeatSerializer(seats, many=True)
+
+        # Return the serialized seat data
+        return Response({
+            'bus': bus.name,
+            'seats': seat_serializer.data
+        }, status=status.HTTP_200_OK)
