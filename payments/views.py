@@ -35,3 +35,20 @@ class PayTicket(APIView):
         except Ticket.DoesNotExist:
             logger.error(f"Ticket ID {ticket_id} not found")
             return Response({"error": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class RefundTicket(APIView):
+    def post(self, request):
+        ticket_id = request.data.get('ticket_id')
+        if not ticket_id:
+            return Response({"error": "ticket_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+            if ticket.status == "Payed":
+                ticket.status = "Refunded"
+                ticket.save()
+                return Response({"message": "Ticket status updated to Refunded"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Ticket is not in a Payed status, so it cannot be refunded"}, status=status.HTTP_400_BAD_REQUEST)
+        except Ticket.DoesNotExist:
+            return Response({"error": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)

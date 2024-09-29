@@ -12,6 +12,7 @@ class Ticket(models.Model):
         ("Booked", "Booked"),
         ("Payed", "Payed"),
         ("Expired", "Expired"),
+        ("Refunded", "Refunded"),
     ]
 
     direction = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="tickets")
