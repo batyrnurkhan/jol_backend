@@ -2,6 +2,7 @@ import logging
 from rest_framework import viewsets
 from rest_framework.views import APIView
 
+from books.models import TicketPassenger, Ticket
 from trip.models import Trip
 from .models import Bus, Driver, Seat
 from .serializers import BusListSerializer, BusCreateSerializer, DriverListSerializer, DriverCreateUpdateSerializer, \
@@ -99,14 +100,33 @@ class BusSeatView(APIView):
         # Get the bus associated with the trip
         bus = trip.bus
 
-        # Get the seats of the bus, using distinct() to avoid duplicates
-        seats = Seat.objects.filter(bus=bus).distinct()
+        # Get the seats of the bus
+        seats = Seat.objects.filter(bus=bus)
 
-        # Serialize the seat data
-        seat_serializer = SeatSerializer(seats, many=True)
+        # Fetch all tickets for this trip
+        tickets = Ticket.objects.filter(direction=trip, status__in=['Booked', 'Bought'])
 
-        # Return the serialized seat data
+        # Get all the booked or bought seats
+        booked_seats = TicketPassenger.objects.filter(ticket__in=tickets).values_list('place_num', flat=True)
+
+        # Prepare seat data with the status
+        seat_data = []
+        for seat in seats:
+            seat_status = 'free'
+            if seat.seat_id in booked_seats:
+                seat_status = 'booked' if tickets.filter(ticketpassenger__place_num=seat.seat_id,
+                                                         status='Booked').exists() else 'bought'
+
+            seat_data.append({
+                "seat_id": seat.seat_id,
+                "seat_col": seat.seat_col,
+                "seat_row": seat.seat_row,
+                "seat_type": seat.seat_type,
+                "status": seat_status
+            })
+
+        # Return the seat data
         return Response({
             'bus': bus.name,
-            'seats': seat_serializer.data
+            'seats': seat_data
         }, status=status.HTTP_200_OK)
