@@ -1,7 +1,8 @@
 import logging
 import datetime
 import json
-
+from datetime import timedelta
+from django.utils import timezone
 from django.db import connection
 from django.db.models import Min, F, Q
 from django.shortcuts import render
@@ -106,26 +107,49 @@ class DirectionPlaces(APIView):
         logger.info(f"Retrieved places for route ID: {route_id}")
         return Response(tickets_list, status=status.HTTP_200_OK)
 
+
 class CreateTicket(APIView):
     def post(self, request):
         serializer = TicketSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             try:
-                # Begin transaction for creating the ticket and booking the seat
+                place_num = request.data['tickets'][0]['place_num']
+                place_floor = request.data['tickets'][0]['place_floor']
+                direction_id = request.data['direction']
+
+                # Check if there is already a ticket for the same place number and floor that is still reserved
+                existing_ticket_passengers = TicketPassenger.objects.filter(
+                    ticket__direction_id=direction_id,
+                    place_num=place_num,
+                    place_floor=place_floor,
+                    ticket__status="Booked"
+                )
+
+                # If a ticket was booked within the last 30 minutes, reject the booking
+                for ticket_passenger in existing_ticket_passengers:
+                    time_difference = timezone.now() - ticket_passenger.created_at
+                    if time_difference < timedelta(minutes=30):
+                        logger.error(
+                            f"Seat {place_num} on floor {place_floor} is already booked by another user and the 30-minute window hasn't expired.")
+                        return Response({
+                                            "error": f"Seat {place_num} on floor {place_floor} is already booked and the 30-minute window hasn't expired."},
+                                        status=status.HTTP_400_BAD_REQUEST)
+
+                # Proceed with booking if the seat is not reserved
                 ticket, reserved_places = serializer.create(serializer.validated_data)
                 logger.info(f"Ticket created successfully with ID: {ticket.id}")
+                return Response({
+                    "message": "Ticket booked successfully",
+                    "ticket_id": ticket.id,
+                    "reserved_places": reserved_places
+                }, status=status.HTTP_201_CREATED)
+
             except ValidationError as e:
                 logger.error(f"Validation error while creating ticket: {str(e)}")
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 logger.error(f"Error while creating ticket: {str(e)}")
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response({
-                "message": "Ticket booked successfully",
-                "ticket_id": ticket.id,
-                "reserved_places": reserved_places
-            }, status=status.HTTP_201_CREATED)
 
         logger.error(f"Invalid data received for creating ticket: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -160,7 +184,7 @@ class GetTicketByIdView(APIView):
             # Fetch the ticket by its ID
             ticket = Ticket.objects.get(id=ticket_id)
 
-            # Serialize the ticket details
+            # Serialize the ticket details, including the status
             serializer = TicketDetailSerializer(ticket)
 
             logger.info(f"Retrieved ticket with ID: {ticket.id}")

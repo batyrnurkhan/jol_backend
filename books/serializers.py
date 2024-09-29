@@ -219,10 +219,11 @@ class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
     direction = serializers.SerializerMethodField()
     passengers = serializers.SerializerMethodField()
+    status = serializers.CharField()  # Include status
 
     class Meta:
         model = Ticket
-        fields = ['id', 'qr_code', 'direction', 'passengers']
+        fields = ['id', 'qr_code', 'direction', 'passengers', 'status']  # Add 'status' to fields
 
     def get_qr_code(self, obj):
         qr_code_url = f"http://example.com/qr/{obj.id}"
