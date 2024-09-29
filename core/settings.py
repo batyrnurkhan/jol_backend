@@ -247,3 +247,8 @@ LOGGING = {
         },
     },
 }
+
+
+ONEVISION_API_KEY = "your_real_api_key"
+ONEVISION_RETURN_URL = "https://yourdomain.com/payment/success/"
+ONEVISION_FAIL_URL = "https://yourdomain.com/payment/fail/"
