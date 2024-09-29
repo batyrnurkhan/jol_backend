@@ -65,8 +65,28 @@ class PassengerSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['phone_number', 'full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
+        fields = ['full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
         read_only_fields = ['phone_number']
+
+    def update(self, instance, validated_data):
+        # Update the CustomUser profile data
+        instance = super().update(instance, validated_data)
+
+        passenger_data = {
+            'full_name': validated_data.get('full_name', instance.full_name),
+            'document_type': validated_data.get('document_type', instance.document_type),
+            'document_number_or_iin': validated_data.get('document_number_or_iin', instance.document_number_or_iin),
+            'birth_date': validated_data.get('birth_date', instance.birth_date),
+        }
+
+        # Update or create the Passenger associated with the user profile (where is_profile_passenger=True)
+        Passenger.objects.update_or_create(
+            user=instance,
+            is_profile_passenger=True,  # Ensure only the passenger connected to the user profile is updated
+            defaults=passenger_data
+        )
+
+        return instance
 
 class MyTicketPassengerSerializer(serializers.ModelSerializer):
     class Meta:

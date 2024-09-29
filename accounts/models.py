@@ -56,6 +56,7 @@ class Passenger(models.Model):
     document_type = models.CharField(_('тип документа'), max_length=50)
     document_number_or_iin = models.CharField(_('номер документа или ИИН'), max_length=100)
     birth_date = models.DateField(_('дата рождения'))
+    is_profile_passenger = models.BooleanField(default=False)
 
     def __str__(self):
         return self.full_name
