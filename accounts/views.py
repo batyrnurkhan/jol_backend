@@ -181,7 +181,8 @@ class UserProfileByTokenView(APIView):
         logger.info(f"User profile retrieved by token: {user.id}")
         return Response({
             "id": user.id,
-            "profile": serializer.data
+            "profile": serializer.data,
+            "phone_number": user.phone_number
         })
 
 
