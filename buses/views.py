@@ -114,8 +114,10 @@ class BusSeatView(APIView):
         for seat in seats:
             seat_status = 'free'
             if seat.seat_id in booked_seats:
-                seat_status = 'booked' if tickets.filter(ticketpassenger__place_num=seat.seat_id,
-                                                         status='Booked').exists() else 'bought'
+                # Check if the seat is booked or bought
+                is_booked = TicketPassenger.objects.filter(ticket__in=tickets, place_num=seat.seat_id,
+                                                           ticket__status='Booked').exists()
+                seat_status = 'booked' if is_booked else 'bought'
 
             seat_data.append({
                 "seat_id": seat.seat_id,
