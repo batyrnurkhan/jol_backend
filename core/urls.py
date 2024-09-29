@@ -38,12 +38,12 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('buses.urls')),
-    path('api/accounts/', include('accounts.urls')),
-    path('api/trip_v2/', include('trip_v2.urls')),
-    path('api/trip/', include('trip.urls')),
-    path('api/books/', include('books.urls')),
-    path('api/payments/', include('payments.urls')),
+    path('api_jol/', include('buses.urls')),
+    path('api_jol/accounts/', include('accounts.urls')),
+    path('api_jol/trip_v2/', include('trip_v2.urls')),
+    path('api_jol/trip/', include('trip.urls')),
+    path('api_jol/books/', include('books.urls')),
+    path('api_jol/payments/', include('payments.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
