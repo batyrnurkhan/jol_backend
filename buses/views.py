@@ -28,10 +28,13 @@ class BusViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         bus = serializer.save()
 
+        # Clear any existing seats (just to be safe)
+        Seat.objects.filter(bus=bus).delete()
+
         # Create seats for the bus
         seats_data = request.data.get('seats', [])
         for seat_data in seats_data:
-            Seat.objects.create(bus=bus, **seat_data)
+            Seat.objects.get_or_create(bus=bus, **seat_data)  # Ensure no duplication
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -43,10 +46,10 @@ class BusViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         # Update seats for the bus
-        seats_data = request.data.get('seats', [])
         Seat.objects.filter(bus=bus).delete()  # Clear existing seats
+        seats_data = request.data.get('seats', [])
         for seat_data in seats_data:
-            Seat.objects.create(bus=bus, **seat_data)
+            Seat.objects.get_or_create(bus=bus, **seat_data)  # Prevent duplication during update
 
         return Response(serializer.data)
 
@@ -54,7 +57,6 @@ class BusViewSet(viewsets.ModelViewSet):
         bus_id = self.get_object().id
         logger.info(f"Deleting bus with ID: {bus_id}")
         return super().destroy(request, *args, **kwargs)
-
 
 
 class DriverViewSet(viewsets.ModelViewSet):
@@ -97,8 +99,8 @@ class BusSeatView(APIView):
         # Get the bus associated with the trip
         bus = trip.bus
 
-        # Get the seats of the bus
-        seats = Seat.objects.filter(bus=bus)
+        # Get the seats of the bus, using distinct() to avoid duplicates
+        seats = Seat.objects.filter(bus=bus).distinct()
 
         # Serialize the seat data
         seat_serializer = SeatSerializer(seats, many=True)
