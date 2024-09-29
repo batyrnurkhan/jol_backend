@@ -3,160 +3,120 @@
         "model": "trip_v2.city",
         "pk": 1,
         "fields": {
-            "name": "Almaty",
-            "region": "Almaty Region"
+            "name": "Алматы",
+            "region": "Алматинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 2,
         "fields": {
-            "name": "Astana",
-            "region": "Akmola Region"
+            "name": "Нур-Султан",
+            "region": "Акмолинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 3,
         "fields": {
-            "name": "Shymkent",
-            "region": "Turkestan Region"
+            "name": "Шымкент",
+            "region": "Южно-Казахстанская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 4,
         "fields": {
-            "name": "Aktau",
-            "region": "Mangystau Region"
+            "name": "Караганда",
+            "region": "Карагандинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 5,
         "fields": {
-            "name": "Atyrau",
-            "region": "Atyrau Region"
+            "name": "Тараз",
+            "region": "Жамбылская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 6,
         "fields": {
-            "name": "Karaganda",
-            "region": "Karaganda Region"
+            "name": "Актобе",
+            "region": "Актюбинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 7,
         "fields": {
-            "name": "Pavlodar",
-            "region": "Pavlodar Region"
+            "name": "Костанай",
+            "region": "Костанайская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 8,
         "fields": {
-            "name": "Ust-Kamenogorsk",
-            "region": "East Kazakhstan Region"
+            "name": "Атырау",
+            "region": "Атырауская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 9,
         "fields": {
-            "name": "Kostanay",
-            "region": "Kostanay Region"
+            "name": "Павлодар",
+            "region": "Павлодарская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 10,
         "fields": {
-            "name": "Petropavl",
-            "region": "North Kazakhstan Region"
+            "name": "Усть-Каменогорск",
+            "region": "Восточно-Казахстанская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 11,
         "fields": {
-            "name": "Taraz",
-            "region": "Jambyl Region"
+            "name": "Кокшетау",
+            "region": "Акмолинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 12,
         "fields": {
-            "name": "Temirtau",
-            "region": "Karaganda Region"
+            "name": "Кызылорда",
+            "region": "Кызылординская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 13,
         "fields": {
-            "name": "Zhanaozen",
-            "region": "Mangystau Region"
+            "name": "Семей",
+            "region": "Восточно-Казахстанская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 14,
         "fields": {
-            "name": "Kokshetau",
-            "region": "Akmola Region"
+            "name": "Темиртау",
+            "region": "Карагандинская область"
         }
     },
     {
         "model": "trip_v2.city",
         "pk": 15,
         "fields": {
-            "name": "Kentau",
-            "region": "Turkestan Region"
-        }
-    },
-    {
-        "model": "trip_v2.city",
-        "pk": 16,
-        "fields": {
-            "name": "Balqash",
-            "region": "Karaganda Region"
-        }
-    },
-    {
-        "model": "trip_v2.city",
-        "pk": 17,
-        "fields": {
-            "name": "Saryagash",
-            "region": "Turkestan Region"
-        }
-    },
-    {
-        "model": "trip_v2.city",
-        "pk": 18,
-        "fields": {
-            "name": "Taldykorgan",
-            "region": "Almaty Region"
-        }
-    },
-    {
-        "model": "trip_v2.city",
-        "pk": 19,
-        "fields": {
-            "name": "Zhetisu",
-            "region": "Almaty Region"
-        }
-    },
-    {
-        "model": "trip_v2.city",
-        "pk": 20,
-        "fields": {
-            "name": "Aksu",
-            "region": "Pavlodar Region"
+            "name": "Экибастуз",
+            "region": "Павлодарская область"
         }
     }
 ]
