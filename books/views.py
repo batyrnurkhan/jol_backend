@@ -152,3 +152,24 @@ class RetrievePaidTicket(APIView):
         except Exception as e:
             logger.error(f"Error while retrieving paid ticket: {str(e)}")
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetTicketByIdView(APIView):
+    def get(self, request, ticket_id):
+        try:
+            # Fetch the ticket by its ID
+            ticket = Ticket.objects.get(id=ticket_id)
+
+            # Serialize the ticket details
+            serializer = TicketDetailSerializer(ticket)
+
+            logger.info(f"Retrieved ticket with ID: {ticket.id}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Ticket.DoesNotExist:
+            logger.error(f"Ticket with ID {ticket_id} not found")
+            return Response({"error": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            logger.error(f"Error while retrieving ticket by ID: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

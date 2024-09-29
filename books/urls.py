@@ -9,5 +9,6 @@ urlpatterns = [
     path('create-ticket/', CreateTicket.as_view(), name='create_ticket'),
     path('directions/', DirectionListView.as_view(), name='direction_list'),
     path('retrieve-paid-ticket/', RetrievePaidTicket.as_view(), name='retrieve_paid_ticket'),
+    path('get-ticket/<int:ticket_id>/', GetTicketByIdView.as_view(), name='get_ticket_by_id'),
 
 ]
