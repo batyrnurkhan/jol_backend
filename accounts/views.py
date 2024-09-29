@@ -131,6 +131,7 @@ class CompleteProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id=None):
+        # Check if the user is authorized to update the profile
         if request.user.id != user_id:
             logger.warning(f"Unauthorized profile update attempt by user: {request.user.id}")
             return Response({"error": "You are not authorized to update this profile."},
@@ -142,22 +143,31 @@ class CompleteProfileView(APIView):
             logger.error(f"User not found: {user_id}")
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # Validate the profile data
         serializer = CompleteProfileSerializer(instance=user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
 
-            if not Passenger.objects.filter(user=user).exists():
-                Passenger.objects.create(
-                    user=user,
-                    full_name=serializer.validated_data.get('full_name', ''),
-                    document_type=serializer.validated_data.get('document_type', ''),
-                    document_number_or_iin=serializer.validated_data.get('document_number_or_iin', ''),
-                    birth_date=serializer.validated_data.get('birth_date', None)
-                )
-                logger.info(f"Passenger created for user: {user.id}")
+            # Check if a passenger associated with the user's profile exists (with is_profile_passenger=True)
+            passenger, created = Passenger.objects.update_or_create(
+                user=user,
+                is_profile_passenger=True,  # Ensure only the user's profile passenger is affected
+                defaults={
+                    'full_name': serializer.validated_data.get('full_name', ''),
+                    'document_type': serializer.validated_data.get('document_type', ''),
+                    'document_number_or_iin': serializer.validated_data.get('document_number_or_iin', ''),
+                    'birth_date': serializer.validated_data.get('birth_date', None),
+                }
+            )
 
-            return Response({"message": "Profile updated successfully, and passenger created."},
+            if created:
+                logger.info(f"Passenger created for user: {user.id} with is_profile_passenger=True")
+            else:
+                logger.info(f"Passenger updated for user: {user.id} with is_profile_passenger=True")
+
+            return Response({"message": "Profile updated successfully, and passenger created/updated."},
                             status=status.HTTP_200_OK)
+
         logger.error("Profile update failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
