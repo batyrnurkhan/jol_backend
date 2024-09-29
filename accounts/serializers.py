@@ -65,7 +65,7 @@ class PassengerSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email']
+        fields = ['full_name', 'document_type', 'document_number_or_iin', 'birth_date', 'email', 'phone_number']  # Include phone_number in the profile data
         read_only_fields = ['phone_number']
 
     def update(self, instance, validated_data):
