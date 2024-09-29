@@ -37,7 +37,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api_jol/admin/', admin.site.urls),
     path('api_jol/', include('buses.urls')),
     path('api_jol/accounts/', include('accounts.urls')),
     path('api_jol/trip_v2/', include('trip_v2.urls')),
