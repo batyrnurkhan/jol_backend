@@ -111,6 +111,7 @@ class CreateTicket(APIView):
         serializer = TicketSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             try:
+                # Begin transaction for creating the ticket and booking the seat
                 ticket, reserved_places = serializer.create(serializer.validated_data)
                 logger.info(f"Ticket created successfully with ID: {ticket.id}")
             except ValidationError as e:
@@ -121,7 +122,7 @@ class CreateTicket(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({
-                "message": "OK",
+                "message": "Ticket booked successfully",
                 "ticket_id": ticket.id,
                 "reserved_places": reserved_places
             }, status=status.HTTP_201_CREATED)

@@ -1,22 +1,33 @@
 import logging
 from rest_framework import serializers
-from .models import Bus, Driver
+from .models import Bus, Driver, Seat
 
 # Initialize logger for buses app
 logger = logging.getLogger('buses')
 
+class SeatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seat
+        fields = ['seat_id', 'seat_col', 'seat_row', 'seat_type']
+
+
 class BusCreateSerializer(serializers.ModelSerializer):
+    seats = SeatSerializer(many=True)
+
     class Meta:
         model = Bus
         fields = [
             'name', 'stamp', 'model', 'state_number', 'VIN',
             'count_of_seats', 'have_toilet', 'have_wifi',
-            'is_recumbent', 'scheme', 'floors'
+            'is_recumbent', 'scheme', 'floors', 'seats'
         ]
 
     def create(self, validated_data):
-        logger.info(f"Creating Bus with data: {validated_data}")
-        return super().create(validated_data)
+        seats_data = validated_data.pop('seats')
+        bus = Bus.objects.create(**validated_data)
+        for seat_data in seats_data:
+            Seat.objects.create(bus=bus, **seat_data)
+        return bus
 
 class BusListSerializer(serializers.ModelSerializer):
     model_stamp = serializers.SerializerMethodField()
@@ -63,3 +74,4 @@ class BusDetailSerializer(serializers.ModelSerializer):
         model_stamp = f"{obj.stamp.name} {obj.model.name}" if obj.stamp and obj.model else ""
         logger.debug(f"Getting model_stamp for Bus ID {obj.id}: {model_stamp}")
         return model_stamp
+

@@ -63,3 +63,13 @@ class Driver(models.Model):
     def __str__(self):
         logger.debug(f"String representation of Driver called: {self.full_name}")
         return self.full_name
+
+class Seat(models.Model):
+    bus = models.ForeignKey(Bus, related_name="seats", on_delete=models.CASCADE)
+    seat_id = models.PositiveIntegerField()
+    seat_col = models.PositiveIntegerField()
+    seat_row = models.PositiveIntegerField()
+    seat_type = models.CharField(max_length=50, choices=[('aisle', 'Aisle'), ('passenger', 'Passenger'), ('driver', 'Driver')])
+
+    def __str__(self):
+        return f"Seat {self.seat_id} in bus {self.bus.name} (Row {self.seat_row}, Col {self.seat_col})"

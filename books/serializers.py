@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from trip_v2.models import Route, Stop
 from books.models import Ticket, TicketPassenger
-from buses.models import Bus
+from buses.models import Bus, Seat
 from trip.models import Trip
 
 # Initialize logger for books app
@@ -139,6 +139,13 @@ class TicketSerializer(serializers.Serializer):
                 reserved_places = []
 
                 if place_num and place_floor:
+                    # Validate seat type
+                    seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()  # Corrected query
+                    if seat is None:
+                        raise ValidationError(f"Seat {place_num} does not exist on this bus.")
+                    if seat.seat_type in ["aisle", "driver"]:
+                        raise ValidationError(f"Seat {seat.seat_id} cannot be booked as it is for {seat.seat_type}.")
+
                     if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num,
                                                       place_floor=place_floor).exists():
                         logger.error(f"ValidationError: Place {place_num} on floor {place_floor} is already taken.")
@@ -161,6 +168,14 @@ class TicketSerializer(serializers.Serializer):
                         passenger = ticket_data.get("passenger")
                         place_num = ticket_data["place_num"]
                         place_floor = ticket_data["place_floor"]
+
+                        # Validate seat type
+                        seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()  # Corrected query
+                        if seat is None:
+                            raise ValidationError(f"Seat {place_num} does not exist on this bus.")
+                        if seat.seat_type in ["aisle", "driver"]:
+                            raise ValidationError(
+                                f"Seat {seat.seat_id} cannot be booked as it is for {seat.seat_type}.")
 
                         if TicketPassenger.objects.filter(ticket=ticket, place_num=place_num,
                                                           place_floor=place_floor).exists():

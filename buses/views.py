@@ -1,7 +1,9 @@
 import logging
 from rest_framework import viewsets
-from .models import Bus, Driver
+from .models import Bus, Driver, Seat
 from .serializers import BusListSerializer, BusCreateSerializer, DriverListSerializer, DriverCreateUpdateSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 # Initialize logger for buses app
 logger = logging.getLogger('buses')
@@ -18,16 +20,38 @@ class BusViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         logger.info(f"Creating a new bus with data: {request.data}")
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        bus = serializer.save()
+
+        # Create seats for the bus
+        seats_data = request.data.get('seats', [])
+        for seat_data in seats_data:
+            Seat.objects.create(bus=bus, **seat_data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         logger.info(f"Updating bus with data: {request.data}")
-        return super().update(request, *args, **kwargs)
+        bus = self.get_object()
+        serializer = self.get_serializer(bus, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Update seats for the bus
+        seats_data = request.data.get('seats', [])
+        Seat.objects.filter(bus=bus).delete()  # Clear existing seats
+        for seat_data in seats_data:
+            Seat.objects.create(bus=bus, **seat_data)
+
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         bus_id = self.get_object().id
         logger.info(f"Deleting bus with ID: {bus_id}")
         return super().destroy(request, *args, **kwargs)
+
+
 
 class DriverViewSet(viewsets.ModelViewSet):
     queryset = Driver.objects.all()
