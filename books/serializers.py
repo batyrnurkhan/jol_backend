@@ -129,6 +129,7 @@ class TicketSerializer(serializers.Serializer):
                 place_floor = validated_data.get("place_floor")
                 tickets_data = validated_data.get("tickets", [])
 
+                # Create a ticket with the authenticated user
                 ticket = Ticket()
                 ticket.direction = trip
                 ticket.user = self.context["request"].user if self.context["request"].user.is_authenticated else None
@@ -140,7 +141,7 @@ class TicketSerializer(serializers.Serializer):
 
                 if place_num and place_floor:
                     # Validate seat type
-                    seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()  # Corrected query
+                    seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()
                     if seat is None:
                         raise ValidationError(f"Seat {place_num} does not exist on this bus.")
                     if seat.seat_type in ["aisle", "driver"]:
@@ -151,9 +152,10 @@ class TicketSerializer(serializers.Serializer):
                         logger.error(f"ValidationError: Place {place_num} on floor {place_floor} is already taken.")
                         raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
+                    # Create TicketPassenger and link to the ticket owner (user)
                     TicketPassenger.objects.create(
                         ticket=ticket,
-                        user=self.context["request"].user,
+                        user=ticket.user,  # This links the user who owns the ticket to the passenger
                         place_num=place_num,
                         place_floor=place_floor
                     )
@@ -170,7 +172,7 @@ class TicketSerializer(serializers.Serializer):
                         place_floor = ticket_data["place_floor"]
 
                         # Validate seat type
-                        seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()  # Corrected query
+                        seat = Seat.objects.filter(seat_id=place_num, bus=trip.bus).first()
                         if seat is None:
                             raise ValidationError(f"Seat {place_num} does not exist on this bus.")
                         if seat.seat_type in ["aisle", "driver"]:
@@ -182,9 +184,11 @@ class TicketSerializer(serializers.Serializer):
                             logger.error(f"ValidationError: Place {place_num} on floor {place_floor} is already taken.")
                             raise ValidationError(f"Place {place_num} on floor {place_floor} is already taken.")
 
+                        # Create TicketPassenger and link to the passenger if provided, otherwise, link to the user
                         TicketPassenger.objects.create(
                             ticket=ticket,
                             passenger=passenger,
+                            user=ticket.user if passenger is None else None,  # Link user if no passenger specified
                             place_num=place_num,
                             place_floor=place_floor
                         )
@@ -213,7 +217,6 @@ class TicketSerializer(serializers.Serializer):
 
     class Meta:
         fields = ["direction", "place_num", "place_floor", "tickets"]
-
 
 class TicketDetailSerializer(serializers.ModelSerializer):
     qr_code = serializers.SerializerMethodField()
