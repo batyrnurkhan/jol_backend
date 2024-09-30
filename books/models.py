@@ -58,18 +58,9 @@ class TicketPassenger(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        logger.debug(
-            f"Attempting to save TicketPassenger: Ticket {self.ticket.id}, Passenger {self.passenger}, User {self.user}, Place {self.place_num}, Floor {self.place_floor}")
-        # Filter TicketPassengers by the exact same trip
-        tps = TicketPassenger.objects.filter(ticket=self.ticket)
-
-        for tp in tps:
-            # Check if the exact place on the same floor is already taken
-            if tp.place_num == self.place_num and tp.place_floor == self.place_floor:
-                logger.error(f"ValidationError: Place {self.place_num} on floor {self.place_floor} is already taken.")
-                raise ValidationError(
-                    f"Place {self.place_num} on floor {self.place_floor} is already taken by {tp.passenger.full_name if tp.passenger else 'another user'}")
-
+        # Ensure that the user field is populated from the ticket if it's not manually set
+        if not self.user and self.ticket and self.ticket.user:
+            self.user = self.ticket.user  # Automatically set user from the ticket
         super().save(*args, **kwargs)
 
     def clean(self):
