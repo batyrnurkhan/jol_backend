@@ -24,6 +24,8 @@ class Ticket(models.Model):
     def save(self, *args, **kwargs):
         if self.status == "Booked" and self.booked_at is None:
             self.booked_at = timezone.now()
+        # Check if ticket should be expired
+        self.check_and_expire()
         super().save(*args, **kwargs)
 
     def is_locked(self):
@@ -40,6 +42,12 @@ class Ticket(models.Model):
             if elapsed_time >= timedelta(minutes=30):
                 self.status = "Expired"
                 self.save()
+
+    def mark_as_paid(self):
+        """Mark the ticket as paid and save."""
+        if self.status == "Booked":
+            self.status = "Payed"
+            self.save()
 
 class TicketPassenger(models.Model):
     ticket = models.ForeignKey(Ticket, related_name="passenger_tickets", on_delete=models.CASCADE)

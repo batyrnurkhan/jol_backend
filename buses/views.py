@@ -1,7 +1,6 @@
 import logging
 from rest_framework import viewsets
 from rest_framework.views import APIView
-
 from books.models import TicketPassenger, Ticket
 from trip.models import Trip
 from .models import Bus, Driver, Seat
@@ -92,32 +91,30 @@ class BusSeatView(APIView):
             return Response({"error": "Trip ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve the trip by ID
             trip = Trip.objects.get(id=trip_id)
         except Trip.DoesNotExist:
             return Response({"error": "Trip not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get the bus associated with the trip
         bus = trip.bus
-
-        # Get the seats of the bus
         seats = Seat.objects.filter(bus=bus)
 
         # Fetch all tickets for this trip
-        tickets = Ticket.objects.filter(direction=trip, status__in=['Booked', 'Bought'])
+        tickets = Ticket.objects.filter(direction=trip)
 
-        # Get all the booked or bought seats
-        booked_seats = TicketPassenger.objects.filter(ticket__in=tickets).values_list('place_num', flat=True)
+        # Get all booked or paid seats
+        booked_seats = TicketPassenger.objects.filter(ticket__in=tickets).values_list('place_num', 'ticket__status')
 
-        # Prepare seat data with the status
+        # Prepare seat data with status
         seat_data = []
         for seat in seats:
             seat_status = 'free'
-            if seat.seat_id in booked_seats:
-                # Check if the seat is booked or bought
-                is_booked = TicketPassenger.objects.filter(ticket__in=tickets, place_num=seat.seat_id,
-                                                           ticket__status='Booked').exists()
-                seat_status = 'booked' if is_booked else 'bought'
+            for place_num, ticket_status in booked_seats:
+                if seat.seat_id == place_num:
+                    if ticket_status == 'Booked':
+                        seat_status = 'booked'
+                    elif ticket_status == 'Payed':
+                        seat_status = 'paid'
+                    break
 
             seat_data.append({
                 "seat_id": seat.seat_id,
@@ -127,7 +124,6 @@ class BusSeatView(APIView):
                 "status": seat_status
             })
 
-        # Return the seat data
         return Response({
             'bus': bus.name,
             'seats': seat_data
