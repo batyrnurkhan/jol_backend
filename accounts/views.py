@@ -29,31 +29,6 @@ logger = logging.getLogger('accounts')
 CustomUser = get_user_model()
 
 
-# class PhoneNumberView(APIView):
-#     def post(self, request):
-#         logger.info("Received data: %s", request.data)
-#         serializer = PhoneNumberSerializer(data=request.data)
-#         if serializer.is_valid():
-#             phone_number = serializer.validated_data['phone_number']
-#             phone_number = phone_number.replace('+', '')
-#
-#             verification_code = random.randint(1000, 9999)
-#
-#             # Отправка SMS через Mobizon API
-#             sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
-#             try:
-#                 sms_service.send_sms(phone_number,str("Code for Joool: " + str(verification_code)))
-#             except Exception as e:
-#                 logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
-#
-#             cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
-#             logger.info(f"Verification code {verification_code} set for {phone_number}")
-#             return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
-#
-#         logger.error("Invalid data: %s", serializer.errors)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class PhoneNumberView(APIView):
     def post(self, request):
         logger.info("Received data: %s", request.data)
@@ -64,23 +39,48 @@ class PhoneNumberView(APIView):
 
             verification_code = random.randint(1000, 9999)
 
-            # Commenting out SMS sending part using Mobizon API
-            # sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
-            # try:
-            #     sms_service.send_sms(phone_number, str("Code for Joool: " + str(verification_code)))
-            # except Exception as e:
-            #     logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
+            # Отправка SMS через Mobizon API
+            sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
+            try:
+                sms_service.send_sms(phone_number,str("Code for Joool: " + str(verification_code)))
+            except Exception as e:
+                logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
 
-            # For testing, we'll log the verification code instead of sending it
-            logger.info(f"Verification code {verification_code} generated for {phone_number}")
-
-            # Store the code in cache for 5 minutes
-            cache.set(phone_number, str(verification_code), timeout=300)
+            cache.set(phone_number, str(verification_code), timeout=300)  # Хранение кода в кэше на 5 минут
             logger.info(f"Verification code {verification_code} set for {phone_number}")
-            return Response({"message": "Verification code generated"}, status=status.HTTP_200_OK)
+            return Response({"message": "Verification code set"}, status=status.HTTP_200_OK)
 
         logger.error("Invalid data: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class PhoneNumberView(APIView):
+#     def post(self, request):
+#         logger.info("Received data: %s", request.data)
+#         serializer = PhoneNumberSerializer(data=request.data)
+#         if serializer.is_valid():
+#             phone_number = serializer.validated_data['phone_number']
+#             phone_number = phone_number.replace('+', '')
+#
+#             verification_code = random.randint(1000, 9999)
+#
+#             # Commenting out SMS sending part using Mobizon API
+#             # sms_service = SMSCService(api_key=settings.MOBIZON_API_KEY)
+#             # try:
+#             #     sms_service.send_sms(phone_number, str("Code for Joool: " + str(verification_code)))
+#             # except Exception as e:
+#             #     logger.error("Failed to send SMS, but proceeding anyway: %s", str(e))
+#
+#             # For testing, we'll log the verification code instead of sending it
+#             logger.info(f"Verification code {verification_code} generated for {phone_number}")
+#
+#             # Store the code in cache for 5 minutes
+#             cache.set(phone_number, str(verification_code), timeout=300)
+#             logger.info(f"Verification code {verification_code} set for {phone_number}")
+#             return Response({"message": "Verification code generated"}, status=status.HTTP_200_OK)
+#
+#         logger.error("Invalid data: %s", serializer.errors)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyCodeView(APIView):
     def post(self, request):
