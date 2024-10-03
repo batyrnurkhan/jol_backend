@@ -15,13 +15,14 @@ class TripSerializer(serializers.ModelSerializer):
     bus = BusDetailSerializer()  # Use the detailed serializer here
     driver = DriverListSerializer()  # Include driver details here
     status_description = serializers.SerializerMethodField()
+    come_to_point = serializers.ReadOnlyField()
 
     class Meta:
         model = Trip
         fields = [
             'id', 'departure_time', 'start_date', 'end_date', 'ticket_price',
             'frequency', 'weekdays', 'status', 'route', 'bus', 'driver',
-            'from_city', 'to_city', 'status_description'
+            'from_city', 'to_city', 'status_description', 'come_to_point'
         ]
 
     def get_status_description(self, obj):
