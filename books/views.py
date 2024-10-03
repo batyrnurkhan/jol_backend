@@ -156,7 +156,17 @@ class CreateTicket(APIView):
 
 class DirectionListView(APIView):
     def get(self, request):
-        directions = Trip.objects.all()
+        from_city_id = request.GET.get('from_city_id')
+        to_city_id = request.GET.get('to_city_id')
+
+        if from_city_id and to_city_id:
+            directions = Trip.objects.filter(
+                route__start_city_id=from_city_id,
+                route__end_city_id=to_city_id
+            )
+        else:
+            directions = Trip.objects.all()  # Fallback if no parameters are provided
+
         serializer = TripSerializer(directions, many=True)
         logger.info(f"Retrieved list of directions. Count: {len(directions)}")
         return Response(serializer.data, status=status.HTTP_200_OK)

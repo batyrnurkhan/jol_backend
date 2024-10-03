@@ -31,13 +31,14 @@ class TicketDirectionSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     free_places_count = serializers.SerializerMethodField()
     taxi_park = serializers.SerializerMethodField()
+    come_to_point = serializers.SerializerMethodField()  # New field for arrival time
 
     class Meta:
         model = Trip
         fields = [
             'id', 'from_point', 'from_bus_station', 'from_date', 'from_time',
             'to_point', 'to_bus_station', 'to_date', 'to_time', 'price',
-            'free_places_count', 'bus', 'taxi_park'
+            'free_places_count', 'bus', 'taxi_park', 'come_to_point'  # Add the new field
         ]
 
     def get_from_point(self, obj):
@@ -105,6 +106,15 @@ class TicketDirectionSerializer(serializers.ModelSerializer):
         taxi_park = "Таксопарк “ТОО ЖОЛЫМБЕТ ПЕРЕВОЗКИ”"
         logger.debug(f"Getting taxi_park: {taxi_park}")
         return taxi_park
+
+    def get_come_to_point(self, obj):
+        """Calculate the arrival time (come_to_point) based on departure time and total travel time."""
+        if obj.departure_time and obj.route.total_travel_time:
+            departure_datetime = datetime.datetime.combine(obj.start_date, obj.departure_time)
+            arrival_datetime = departure_datetime + obj.route.total_travel_time
+            logger.debug(f"Calculating come_to_point: {arrival_datetime}")
+            return arrival_datetime.time().strftime('%H:%M')  # Return the time part formatted
+        return None
 
 
 class PassengerTicketSerializer(serializers.ModelSerializer):
