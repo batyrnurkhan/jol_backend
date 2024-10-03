@@ -320,9 +320,18 @@ class MyTicketsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        tickets = Ticket.objects.filter(user=request.user)
-        serializer = MyTicketSerializer(tickets, many=True)
-        logger.info(f"My tickets retrieved for user: {request.user.id}")
+        # Get all booked tickets for the user
+        user_tickets = Ticket.objects.filter(user=request.user)
+
+        # Expire any tickets that have been booked for more than 30 minutes
+        for ticket in user_tickets:
+            ticket.check_and_expire()  # This will update the status to "Expired" if necessary
+
+        # Fetch only non-expired tickets for the user
+        valid_tickets = user_tickets.exclude(status="Expired")
+
+        serializer = MyTicketSerializer(valid_tickets, many=True)
+        logger.info(f"My valid tickets retrieved for user: {request.user.id}")
         return Response(serializer.data, status=200)
 
 
